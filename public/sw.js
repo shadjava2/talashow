@@ -1,5 +1,5 @@
 /* Talashow SW (simple cache + video warm-cache) */
-const CACHE_NAME = 'talashow-v8';
+const CACHE_NAME = 'talashow-v9';
 const OFFLINE_URL = '/offline.html';
 
 // Cache séparé pour les vidéos (HLS) — attention quota navigateur.

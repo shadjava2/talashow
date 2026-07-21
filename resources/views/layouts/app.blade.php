@@ -93,48 +93,42 @@
                 $siteLogo = $settings->get('site_logo_url') ?: asset('logo.svg');
             @endphp
 
-            {{-- Mobile header (minimal): Logo + S'abonner + Achat + Donation --}}
-            <div class="ts-mobile-only md:hidden h-16 flex items-center justify-between">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
+            {{-- Mobile header : logo + actions icônes (pas de débordement) --}}
+            <div class="ts-mobile-header md:hidden">
+                <a href="{{ route('home') }}" class="ts-mobile-header__logo shrink-0">
                     <img
                         src="{{ $siteLogo }}"
                         alt="Talashow"
-                        class="h-7 max-h-7 w-auto max-w-[120px] object-contain rounded-md shadow-lg shadow-black/20"
+                        class="h-7 max-h-7 w-auto max-w-[100px] object-contain"
                         data-no-skeleton
                         onerror="this.onerror=null; this.src='{{ asset('logo.svg') }}';"
                     />
                 </a>
 
-                <div class="flex items-center gap-2">
+                <div class="ts-mobile-header__actions">
                     @include('components.theme-switcher', ['compact' => true])
+                    @include('components.lang-switcher', ['compact' => true])
 
                     @auth
                         @if(!auth()->user()->hasActiveSubscription())
-                            <a href="{{ route('payment.recharge') }}"
-                               class="ts-header-btn ts-header-btn--primary text-[12px]">
-                                {{ __('ui.nav.subscribe') }}
+                            <a href="{{ route('payment.recharge') }}" class="ts-icon-btn ts-icon-btn--accent" aria-label="{{ __('ui.nav.subscribe') }}" title="{{ __('ui.nav.subscribe') }}">
+                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+                                </svg>
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}"
-                           class="ts-header-btn ts-header-btn--primary text-[12px]">
-                            {{ __('ui.nav.login') }}
+                        <a href="{{ route('login') }}" class="ts-icon-btn ts-icon-btn--accent" aria-label="{{ __('ui.nav.login') }}" title="{{ __('ui.nav.login') }}">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
+                            </svg>
                         </a>
                     @endauth
 
-                    <a href="{{ route('payment.recharge') }}"
-                       class="ts-header-btn ts-header-btn--ghost text-[12px]">
-                        <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <a href="{{ route('payment.recharge') }}" class="ts-icon-btn" aria-label="{{ __('ui.nav.buy_coins') }}" title="{{ __('ui.nav.buy_coins') }}">
+                        <svg class="ts-icon-btn__coin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
                         </svg>
-                        <span>{{ __('ui.nav.buy_coins') }}</span>
-                    </a>
-                    <a href="{{ route('payment.donation') }}"
-                       class="ts-header-btn ts-header-btn--ghost text-[12px]">
-                        <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
-                        </svg>
-                        <span>{{ __('ui.nav.donation') }}</span>
                     </a>
                 </div>
             </div>
@@ -410,71 +404,65 @@
         @yield('content')
     </main>
 
-    {{-- Bottom Navigation (mobile app-like): Accueil / Genre / Profil|Connexion / Langue --}}
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[90] ts-chrome-nav ts-chrome-nav--bottom pb-[env(safe-area-inset-bottom)]">
-        <div class="max-w-7xl mx-auto px-3">
-            <div class="h-16 min-h-[44px] grid grid-cols-4 items-center">
-                {{-- Home --}}
-                <a href="{{ route('home') }}"
-                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('home') ? 'is-active' : '' }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
+    {{-- Bottom Navigation mobile : Accueil / Genre / Rechercher / Achat / Compte --}}
+    @php
+        $isBrowse = request()->routeIs('browse');
+        $isSearchTab = $isBrowse && (request()->filled('search') || request('tab') === 'search');
+        $isGenreTab = $isBrowse && ! $isSearchTab;
+    @endphp
+    <nav class="ts-bottom-nav md:hidden" aria-label="Navigation">
+        <div class="ts-bottom-nav__inner">
+            <a href="{{ route('home') }}"
+               class="ts-bottom-nav__item {{ request()->routeIs('home') ? 'is-active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/></svg>
+                <span>{{ __('ui.nav.home') }}</span>
+            </a>
+
+            <a href="{{ route('browse') }}"
+               class="ts-bottom-nav__item {{ $isGenreTab ? 'is-active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+                <span>{{ __('ui.nav.genre') }}</span>
+            </a>
+
+            <a href="{{ route('browse', ['tab' => 'search']) }}"
+               class="ts-bottom-nav__item {{ $isSearchTab ? 'is-active' : '' }}"
+               aria-label="{{ __('ui.nav.search') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <span>{{ __('ui.nav.search') }}</span>
+            </a>
+
+            <a href="{{ route('payment.recharge') }}"
+               class="ts-bottom-nav__item {{ request()->routeIs('payment.*') ? 'is-active' : '' }}">
+                <span class="ts-bottom-nav__icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Z"/>
                     </svg>
-                    <span>{{ __('ui.nav.home') }}</span>
-                </a>
+                    @auth
+                        <span class="ts-bottom-nav__badge">{{ min(99, (int) auth()->user()->total_coins) }}</span>
+                    @endauth
+                </span>
+                <span>{{ __('ui.nav.buy_coins') }}</span>
+            </a>
 
-                {{-- Genre --}}
-                <a href="{{ route('browse') }}"
-                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('browse') ? 'is-active' : '' }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
+            @auth
+                <a href="{{ route('profile') }}"
+                   class="ts-bottom-nav__item {{ request()->routeIs('profile') ? 'is-active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
                     </svg>
-                    <span>{{ __('ui.nav.genre') }}</span>
+                    <span>{{ __('ui.nav.account') }}</span>
                 </a>
-
-                {{-- Profile / Login --}}
-                @auth
-                    <a href="{{ route('profile') }}"
-                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('profile') ? 'is-active' : '' }}">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
-                        </svg>
-                        <span>{{ __('ui.nav.profile') }}</span>
-                    </a>
-                @else
-                    <a href="{{ route('login') }}"
-                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('login') ? 'is-active' : '' }}">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5ZM4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8v2H4v14h8v2Z"/>
-                        </svg>
-                        <span>{{ __('ui.nav.login') }}</span>
-                    </a>
-                @endauth
-
-                {{-- Langue (dropdown) --}}
-                <details class="relative flex flex-col items-center justify-center min-h-[44px]">
-                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] ts-bottom-nav__item">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm7.93 9h-3.17a15.7 15.7 0 0 0-1.15-5.01A8.02 8.02 0 0 1 19.93 11ZM12 4c.92 0 2.55 2.12 3.32 7H8.68C9.45 6.12 11.08 4 12 4ZM4.07 13h3.17c.2 1.78.62 3.53 1.25 5.04A8.02 8.02 0 0 1 4.07 13Zm3.17-2H4.07a8.02 8.02 0 0 1 4.26-5.02A15.7 15.7 0 0 0 7.24 11Zm1.44 2h6.64c-.78 4.88-2.4 7-3.32 7-.92 0-2.55-2.12-3.32-7Zm7.83 5.04c.63-1.51 1.05-3.26 1.25-5.04h3.17a8.02 8.02 0 0 1-4.42 5.04Z"/>
-                        </svg>
-                        <span>{{ __('ui.nav.language') }}</span>
-                    </summary>
-                    <div class="absolute bottom-14 right-0 z-[80] min-w-[9rem] ts-panel rounded-xl p-2">
-                        <div class="flex flex-col gap-2">
-                            <a href="{{ route('lang.switch', 'fr') }}"
-                               onclick="this.closest('details')?.removeAttribute('open')"
-                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'fr' ? 'bg-red-600 text-white' : 'ts-header-btn ts-header-btn--ghost' }}">
-                                FR
-                            </a>
-                            <a href="{{ route('lang.switch', 'en') }}"
-                               onclick="this.closest('details')?.removeAttribute('open')"
-                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'en' ? 'bg-red-600 text-white' : 'ts-header-btn ts-header-btn--ghost' }}">
-                                EN
-                            </a>
-                        </div>
-                    </div>
-                </details>
-            </div>
+            @else
+                <a href="{{ route('login') }}"
+                   class="ts-bottom-nav__item {{ request()->routeIs('login') || request()->routeIs('register') ? 'is-active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
+                    </svg>
+                    <span>{{ __('ui.nav.account') }}</span>
+                </a>
+            @endauth
         </div>
     </nav>
 
@@ -483,43 +471,43 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.about_title') }}</h3>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="{{ route('legal.terms') }}" class="hover:text-white transition">{{ __('ui.footer.terms') }}</a></li>
-                        <li><a href="{{ route('legal.privacy') }}" class="hover:text-white transition">{{ __('ui.footer.privacy') }}</a></li>
-                        <li><a href="{{ route('legal.cookies') }}" class="hover:text-white transition">{{ __('ui.footer.cookies') }}</a></li>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--ts-text-primary)">{{ __('ui.footer.about_title') }}</h3>
+                    <ul class="space-y-2 text-sm ts-footer-link-list">
+                        <li><a href="{{ route('legal.terms') }}" class="ts-footer-link">{{ __('ui.footer.terms') }}</a></li>
+                        <li><a href="{{ route('legal.privacy') }}" class="ts-footer-link">{{ __('ui.footer.privacy') }}</a></li>
+                        <li><a href="{{ route('legal.cookies') }}" class="ts-footer-link">{{ __('ui.footer.cookies') }}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.write_us') }}</h3>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--ts-text-primary)">{{ __('ui.footer.write_us') }}</h3>
                     @php
                         $contactEmail = $settings->get('footer_contact_email');
                         $businessLabel = $settings->get('footer_business_label', "Coopération d'affaires");
                         $businessUrl = $settings->get('footer_business_url');
                     @endphp
                     @if($contactEmail)
-                        <a href="mailto:{{ $contactEmail }}" class="text-sm text-gray-400 hover:text-white transition">{{ $contactEmail }}</a>
+                        <a href="mailto:{{ $contactEmail }}" class="text-sm ts-footer-link">{{ $contactEmail }}</a>
                     @else
-                        <span class="text-sm text-gray-500">{{ __('ui.footer.email_missing') }}</span>
+                        <span class="text-sm ts-text-muted">{{ __('ui.footer.email_missing') }}</span>
                     @endif
                     @if($businessUrl)
-                        <a href="{{ $businessUrl }}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-gray-400 hover:text-white transition">{{ $businessLabel ?: "Coopération d'affaires" }}</a>
+                        <a href="{{ $businessUrl }}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm ts-footer-link">{{ $businessLabel ?: "Coopération d'affaires" }}</a>
                     @endif
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.contact') }}</h3>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--ts-text-primary)">{{ __('ui.footer.contact') }}</h3>
                     @php
                         $phone = $settings->get('footer_phone');
                         $tel = $phone ? preg_replace('/\s+/', '', $phone) : null;
                     @endphp
                     @if($phone)
-                        <a href="tel:{{ $tel }}" class="text-sm text-gray-400 hover:text-white transition">{{ $phone }}</a>
+                        <a href="tel:{{ $tel }}" class="text-sm ts-footer-link">{{ $phone }}</a>
                     @else
-                        <span class="text-sm text-gray-500">{{ __('ui.footer.phone_missing') }}</span>
+                        <span class="text-sm ts-text-muted">{{ __('ui.footer.phone_missing') }}</span>
                     @endif
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.community') }}</h3>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--ts-text-primary)">{{ __('ui.footer.community') }}</h3>
                     @php
                         $fb = $settings->get('social_facebook_url');
                         $yt = $settings->get('social_youtube_url');
@@ -528,26 +516,26 @@
 
                     <div class="flex flex-wrap gap-x-4 gap-y-2">
                         @if($fb)
-                            <a href="{{ $fb }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Facebook</a>
+                            <a href="{{ $fb }}" target="_blank" rel="noopener" class="ts-footer-link">Facebook</a>
                         @endif
                         @if($yt)
-                            <a href="{{ $yt }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Youtube</a>
+                            <a href="{{ $yt }}" target="_blank" rel="noopener" class="ts-footer-link">Youtube</a>
                         @endif
                         @if($tt)
-                            <a href="{{ $tt }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Tiktok</a>
+                            <a href="{{ $tt }}" target="_blank" rel="noopener" class="ts-footer-link">Tiktok</a>
                         @endif
 
                         @if(!$fb && !$yt && !$tt)
-                            <span class="text-sm text-gray-500">{{ __('ui.footer.links_missing') }}</span>
+                            <span class="text-sm ts-text-muted">{{ __('ui.footer.links_missing') }}</span>
                         @endif
                     </div>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
+            <div class="ts-footer-legal mt-8 pt-8 text-center text-sm">
                 <span>{{ __('ui.footer.copyright') }}</span>
                 <span class="mx-2">·</span>
                 <a href="https://nexus.cosoft.app/" target="_blank" rel="noopener noreferrer"
-                   class="text-gray-300 hover:text-white underline underline-offset-4 transition">
+                   class="ts-footer-link ts-footer-link--strong underline underline-offset-4">
                     {{ __('ui.footer.developed_by') }}
                 </a>
             </div>

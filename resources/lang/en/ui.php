@@ -18,6 +18,7 @@ return [
         'donation' => 'Rewards',
         'login' => 'Login',
         'profile' => 'Profile',
+        'account' => 'Account',
         'subscriber' => 'Subscriber',
         'language' => 'Language',
         'theme' => 'Theme',
