@@ -19,6 +19,9 @@ return [
         'profile' => 'Profil',
         'subscriber' => 'Abonné',
         'language' => 'Langue',
+        'theme' => 'Thème',
+        'theme_dark' => 'Sombre',
+        'theme_light' => 'Clair',
     ],
     'pwa' => [
         'install_title' => 'Installer l’application Talashow',

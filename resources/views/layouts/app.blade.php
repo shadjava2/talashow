@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
 @php
     $settings = $settings ?? app(\App\Services\SettingsService::class);
 @endphp
@@ -12,7 +12,22 @@
     <title>@yield('title', 'Talashow') - Talashow</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#0b0b0e">
+    <meta name="theme-color" content="#0b0b0e" data-ts-theme-color>
+    <script>
+        (function () {
+            try {
+                var key = 'talashow-theme';
+                var saved = localStorage.getItem(key);
+                var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+                var meta = document.querySelector('meta[data-ts-theme-color]');
+                if (meta) meta.setAttribute('content', theme === 'light' ? '#f7f8fb' : '#0b0b0e');
+                window.__TALASHOW_THEME__ = theme;
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
@@ -66,7 +81,7 @@
         })();
     </script>
 </head>
-    <body class="ts-app-shell text-white font-sans antialiased overflow-x-hidden">
+    <body class="ts-app-shell font-sans antialiased overflow-x-hidden">
     <x-layout.ambient-bg />
     <div class="ts-app-shell__content relative z-10 isolate">
     <!-- Navigation -->
@@ -89,6 +104,8 @@
                 </a>
 
                 <div class="flex items-center gap-2">
+                    @include('components.theme-switcher', ['compact' => true])
+
                     @auth
                         @if(!auth()->user()->hasActiveSubscription())
                             <a href="{{ route('payment.recharge') }}"
@@ -154,7 +171,7 @@
                                     value="{{ request('search') }}"
                                     placeholder="{{ __('ui.nav.search') }}"
                                     autocomplete="off"
-                                    class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 pr-10 w-64 text-sm focus:outline-none focus:border-red-600 transition"
+                                    class="ts-search-input px-4 py-2 pl-10 pr-10 w-64 text-sm transition"
                                 >
                                 @if(request('genre') && request('genre') !== 'all')
                                     <input type="hidden" name="genre" value="{{ request('genre') }}">
@@ -238,6 +255,7 @@
                         </div>
                     @endauth
 
+                    @include('components.theme-switcher')
                     {{-- Lang switcher (single model) --}}
                     @include('components.lang-switcher')
                 </div>
@@ -425,7 +443,7 @@
             <div class="h-16 min-h-[44px] grid grid-cols-4 items-center">
                 {{-- Home --}}
                 <a href="{{ route('home') }}"
-                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('home') ? 'text-red-400' : 'text-gray-300' }}">
+                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('home') ? 'is-active' : '' }}">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
                     </svg>
@@ -434,7 +452,7 @@
 
                 {{-- Genre --}}
                 <a href="{{ route('browse') }}"
-                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('browse') ? 'text-red-400' : 'text-gray-300' }}">
+                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('browse') ? 'is-active' : '' }}">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
                     </svg>
@@ -444,7 +462,7 @@
                 {{-- Profile / Login --}}
                 @auth
                     <a href="{{ route('profile') }}"
-                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('profile') ? 'text-red-400' : 'text-gray-300' }}">
+                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('profile') ? 'is-active' : '' }}">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
                         </svg>
@@ -452,7 +470,7 @@
                     </a>
                 @else
                     <a href="{{ route('login') }}"
-                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('login') ? 'text-red-400' : 'text-gray-300' }}">
+                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('login') ? 'is-active' : '' }}">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5ZM4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8v2H4v14h8v2Z"/>
                         </svg>
@@ -462,22 +480,22 @@
 
                 {{-- Langue (dropdown) --}}
                 <details class="relative flex flex-col items-center justify-center min-h-[44px]">
-                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] text-gray-300">
+                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] ts-bottom-nav__item">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm7.93 9h-3.17a15.7 15.7 0 0 0-1.15-5.01A8.02 8.02 0 0 1 19.93 11ZM12 4c.92 0 2.55 2.12 3.32 7H8.68C9.45 6.12 11.08 4 12 4ZM4.07 13h3.17c.2 1.78.62 3.53 1.25 5.04A8.02 8.02 0 0 1 4.07 13Zm3.17-2H4.07a8.02 8.02 0 0 1 4.26-5.02A15.7 15.7 0 0 0 7.24 11Zm1.44 2h6.64c-.78 4.88-2.4 7-3.32 7-.92 0-2.55-2.12-3.32-7Zm7.83 5.04c.63-1.51 1.05-3.26 1.25-5.04h3.17a8.02 8.02 0 0 1-4.42 5.04Z"/>
                         </svg>
                         <span>{{ __('ui.nav.language') }}</span>
                     </summary>
-                    <div class="absolute bottom-14 right-0 z-[80] min-w-[9rem] bg-gray-900 border border-gray-700/60 rounded-xl shadow-2xl shadow-black/40 p-2">
+                    <div class="absolute bottom-14 right-0 z-[80] min-w-[9rem] ts-panel rounded-xl p-2">
                         <div class="flex flex-col gap-2">
                             <a href="{{ route('lang.switch', 'fr') }}"
                                onclick="this.closest('details')?.removeAttribute('open')"
-                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'fr' ? 'bg-red-600 text-white' : 'bg-white/10 text-gray-200 hover:bg-white/20' }}">
+                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'fr' ? 'bg-red-600 text-white' : 'ts-header-btn ts-header-btn--ghost' }}">
                                 FR
                             </a>
                             <a href="{{ route('lang.switch', 'en') }}"
                                onclick="this.closest('details')?.removeAttribute('open')"
-                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'en' ? 'bg-red-600 text-white' : 'bg-white/10 text-gray-200 hover:bg-white/20' }}">
+                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'en' ? 'bg-red-600 text-white' : 'ts-header-btn ts-header-btn--ghost' }}">
                                 EN
                             </a>
                         </div>

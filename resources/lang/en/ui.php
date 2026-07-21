@@ -20,6 +20,9 @@ return [
         'profile' => 'Profile',
         'subscriber' => 'Subscriber',
         'language' => 'Language',
+        'theme' => 'Theme',
+        'theme_dark' => 'Dark',
+        'theme_light' => 'Light',
     ],
     'pwa' => [
         'install_title' => 'Install the Talashow app',

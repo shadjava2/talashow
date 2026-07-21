@@ -1006,6 +1006,63 @@ function setupScheduledLocalClock() {
     window.addEventListener('pagehide', () => window.clearInterval(t), { once: true });
 }
 
+// Theme dark / light
+function setupThemeToggle() {
+    const KEY = 'talashow-theme';
+
+    const getTheme = () => {
+        const attr = document.documentElement.getAttribute('data-theme');
+        if (attr === 'light' || attr === 'dark') return attr;
+        try {
+            const saved = localStorage.getItem(KEY);
+            if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) {}
+        return 'dark';
+    };
+
+    const readLabels = () => {
+        const btn = document.querySelector('[data-ts-theme-toggle]');
+        return {
+            dark: btn?.dataset?.labelDark || 'Dark',
+            light: btn?.dataset?.labelLight || 'Light',
+        };
+    };
+
+    const applyTheme = (theme) => {
+        const next = theme === 'light' ? 'light' : 'dark';
+        const labels = readLabels();
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+            localStorage.setItem(KEY, next);
+        } catch (e) {}
+        window.__TALASHOW_THEME__ = next;
+
+        const meta = document.querySelector('meta[data-ts-theme-color]');
+        if (meta) {
+            meta.setAttribute('content', next === 'light' ? '#f7f8fb' : '#0b0b0e');
+        }
+
+        document.querySelectorAll('[data-ts-theme-label]').forEach((el) => {
+            el.textContent = labels[next] || next;
+        });
+
+        document.querySelectorAll('[data-ts-theme-toggle]').forEach((btn) => {
+            const switchTo = next === 'light' ? labels.dark : labels.light;
+            const base = btn.getAttribute('title') || 'Theme';
+            btn.setAttribute('aria-label', `${base}: ${switchTo}`);
+            btn.setAttribute('aria-pressed', next === 'light' ? 'true' : 'false');
+        });
+    };
+
+    applyTheme(getTheme());
+
+    document.querySelectorAll('[data-ts-theme-toggle]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            applyTheme(getTheme() === 'light' ? 'dark' : 'light');
+        });
+    });
+}
+
 // Auto-hide alerts
 document.addEventListener('DOMContentLoaded', () => {
     setupSkeletonImages();
@@ -1018,6 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSeriesEngagement();
     setupEpisodeViewTracking();
     setupScheduledLocalClock();
+    setupThemeToggle();
 
     // Header sticky translucide au scroll
     const header = document.querySelector('[data-ts-header]');
