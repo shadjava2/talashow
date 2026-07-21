@@ -1108,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(hide, 5500);
     });
 
-    // Hero : fond + coverflow 3D + texte gauche fluide
+    // Hero : fond cinématique + coverflow 3D + texte animé
     const root = document.querySelector('[data-hero-carousel]');
     if (root) {
         const slides = Array.from(root.querySelectorAll('[data-hero-slide]'));
@@ -1122,14 +1122,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const metaEl = root.querySelector('[data-hero-meta]');
         const playEl = root.querySelector('[data-hero-play]');
         const moreEl = root.querySelector('[data-hero-more]');
+        const progressEl = root.querySelector('[data-hero-progress]');
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+        const AUTO_MS = 6500;
         let index = 0;
         let timer = null;
         let infoTimer = null;
 
         const mod = (n, m) => ((n % m) + m) % m;
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+        function restartProgress() {
+            if (!progressEl || reduced || slides.length < 2) {
+                progressEl?.classList.remove('is-running');
+                return;
+            }
+            progressEl.classList.remove('is-running');
+            // force reflow to restart CSS animation
+            void progressEl.offsetWidth;
+            progressEl.classList.add('is-running');
+        }
+
+        function restartActiveShine(activeCard) {
+            if (!activeCard || reduced) return;
+            const shine = activeCard.querySelector('.ts-coverflow__card-shine');
+            if (!shine) return;
+            shine.style.animation = 'none';
+            void shine.offsetWidth;
+            shine.style.animation = '';
+        }
 
         function syncInfo(slide, animate) {
             if (!slide) return;
@@ -1149,19 +1171,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!animate || reduced || !infoEl) {
                 applyText();
                 infoEl?.classList.remove('is-fading');
+                infoEl?.classList.add('is-ready');
                 return;
             }
 
+            infoEl.classList.remove('is-ready');
             infoEl.classList.add('is-fading');
             clearTimeout(infoTimer);
             infoTimer = window.setTimeout(() => {
                 applyText();
-                requestAnimationFrame(() => infoEl.classList.remove('is-fading'));
-            }, 180);
+                infoEl.classList.remove('is-fading');
+                requestAnimationFrame(() => infoEl.classList.add('is-ready'));
+            }, 200);
         }
 
         function apply(animateInfo = true) {
             const mobile = isMobile();
+            let activeCard = null;
+
             slides.forEach((el, i) => {
                 const offset = i - index;
                 const abs = Math.abs(offset);
@@ -1171,19 +1198,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reduced) {
                     tx = 0; ry = 0; sc = active ? 1 : 0.9; tz = 0; op = active ? 1 : 0; z = active ? 8 : 1;
                 } else if (mobile) {
-                    tx = offset * 72;
-                    ry = 0;
-                    sc = active ? 1 : Math.max(0.8, 1 - abs * 0.1);
-                    tz = 0;
-                    op = abs > 2 ? 0 : (active ? 1 : Math.max(0.4, 1 - abs * 0.25));
-                    z = 10 - abs;
+                    tx = offset * 78;
+                    ry = clamp(offset, -2, 2) * -12;
+                    sc = active ? 1.05 : Math.max(0.78, 1 - abs * 0.12);
+                    tz = active ? 40 : -abs * 40;
+                    op = abs > 2 ? 0 : (active ? 1 : Math.max(0.35, 1 - abs * 0.28));
+                    z = 12 - abs;
                 } else {
-                    tx = offset * 36;
-                    ry = clamp(offset, -3, 3) * -28;
-                    sc = active ? 1 : Math.max(0.72, 1 - abs * 0.1);
-                    tz = active ? 60 : -abs * 70;
-                    op = abs > 3 ? 0 : (active ? 1 : Math.max(0.35, 1 - abs * 0.2));
-                    z = 20 - abs;
+                    tx = offset * 42;
+                    ry = clamp(offset, -3, 3) * -32;
+                    sc = active ? 1.08 : Math.max(0.68, 1 - abs * 0.12);
+                    tz = active ? 90 : -abs * 85;
+                    op = abs > 3 ? 0 : (active ? 1 : Math.max(0.28, 1 - abs * 0.22));
+                    z = 24 - abs;
                 }
 
                 el.style.setProperty('--tx', String(tx));
@@ -1195,10 +1222,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.toggle('is-active', active);
                 el.setAttribute('aria-hidden', active ? 'false' : 'true');
                 el.tabIndex = active ? 0 : -1;
+                if (active) activeCard = el;
             });
 
             bgs.forEach((bg) => {
-                bg.classList.toggle('is-active', Number(bg.dataset.index) === index);
+                const on = Number(bg.dataset.index) === index;
+                bg.classList.toggle('is-active', on);
+                if (on) {
+                    // restart Ken Burns
+                    bg.style.animation = 'none';
+                    void bg.offsetWidth;
+                    bg.style.animation = '';
+                }
             });
 
             dots.forEach((d) => {
@@ -1208,7 +1243,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 else d.removeAttribute('aria-current');
             });
 
+            restartActiveShine(activeCard);
             syncInfo(slides[index], animateInfo);
+            restartProgress();
         }
 
         function go(next, animateInfo = true) {
@@ -1219,12 +1256,14 @@ document.addEventListener('DOMContentLoaded', () => {
         function start() {
             stop();
             if (reduced || slides.length < 2) return;
-            timer = window.setInterval(() => go(index + 1), 5500);
+            timer = window.setInterval(() => go(index + 1), AUTO_MS);
+            restartProgress();
         }
 
         function stop() {
             if (timer) window.clearInterval(timer);
             timer = null;
+            progressEl?.classList.remove('is-running');
         }
 
         prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); go(index - 1); start(); });
@@ -1262,8 +1301,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: true });
 
         window.addEventListener('resize', () => apply(false), { passive: true });
-        go(0, false);
-        start();
+
+        requestAnimationFrame(() => {
+            root.classList.add('is-booted');
+            go(0, false);
+            infoEl?.classList.add('is-ready');
+            start();
+        });
     }
 
     document.querySelectorAll('[data-catalog-reveal]').forEach((el) => {

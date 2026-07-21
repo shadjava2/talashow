@@ -12,45 +12,40 @@
 @if($featured->count() > 0)
 @php $heroSlides = $featured->take(6); @endphp
 <section class="ts-coverflow" data-hero-carousel aria-roledescription="carousel">
-    {{-- Fond plein écran (actif = slide courante) --}}
+    {{-- Fond cinématique plein écran --}}
     <div class="ts-coverflow__bgs" aria-hidden="true">
         @foreach($heroSlides as $i => $series)
             @php $bg = $series->cover_image ?? $series->poster ?? '/images/placeholders/placeholder.svg'; @endphp
-            <img
+            <div
                 class="ts-coverflow__bg {{ $i === 0 ? 'is-active' : '' }}"
                 data-hero-bg
                 data-index="{{ $i }}"
-                src="{{ $imgUrl($bg) }}"
-                alt=""
-                loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
-                decoding="async"
-                onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';"
-            >
+                style="background-image: url('{{ $imgUrl($bg) }}')"
+            ></div>
         @endforeach
     </div>
     <div class="ts-coverflow__scrim" aria-hidden="true"></div>
     <div class="ts-coverflow__glow" aria-hidden="true"></div>
+    <div class="ts-coverflow__noise" aria-hidden="true"></div>
 
     <div class="ts-coverflow__layout max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- Titre + description toujours visibles (gauche) --}}
         <div class="ts-coverflow__copy" data-hero-info>
-            <span class="ts-coverflow__badge">{{ __('ui.home.exclusive_badge') }}</span>
-            <p class="ts-coverflow__meta" data-hero-meta></p>
-            <h1 class="ts-coverflow__title" data-hero-title></h1>
-            <p class="ts-coverflow__desc" data-hero-desc></p>
-            <div class="ts-coverflow__actions">
+            <span class="ts-coverflow__badge" data-hero-anim="1">{{ __('ui.home.exclusive_badge') }}</span>
+            <p class="ts-coverflow__meta" data-hero-meta data-hero-anim="2"></p>
+            <h1 class="ts-coverflow__title" data-hero-title data-hero-anim="3"></h1>
+            <p class="ts-coverflow__desc" data-hero-desc data-hero-anim="4"></p>
+            <div class="ts-coverflow__actions" data-hero-anim="5">
                 <a href="#" class="ts-btn ts-btn--primary px-6 py-3 font-semibold" data-hero-play>{{ __('ui.home.watch_now') }}</a>
                 <a href="#" class="ts-btn ts-btn--ghost px-6 py-3 font-semibold" data-hero-more>{{ __('ui.home.more_info') }}</a>
             </div>
-            <div class="ts-coverflow__dots" data-hero-dots role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
+            <div class="ts-coverflow__dots" data-hero-dots data-hero-anim="6" role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
                 @foreach($heroSlides as $i => $series)
                     <button type="button" class="ts-coverflow__dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-thumb data-index="{{ $i }}" aria-label="{{ __('ui.home.carousel.view_slide', ['title' => $series->titleForLocale()]) }}"></button>
                 @endforeach
             </div>
         </div>
 
-        {{-- Stage 3D posters (droite) --}}
-        <div class="ts-coverflow__stage-wrap">
+        <div class="ts-coverflow__stage-wrap" data-hero-anim="stage">
             <div class="ts-coverflow__stage" data-coverflow-stage>
                 @foreach($heroSlides as $i => $series)
                     @php
@@ -78,6 +73,7 @@
                         aria-label="{{ $series->titleForLocale() }}"
                         aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"
                     >
+                        <span class="ts-coverflow__card-shine" aria-hidden="true"></span>
                         <img
                             class="ts-coverflow__img js-skeleton-img"
                             src="{{ $imgUrl($poster) }}"
@@ -92,6 +88,10 @@
             <button type="button" class="ts-coverflow__nav ts-coverflow__nav--prev" data-hero-prev aria-label="{{ __('ui.home.carousel.prev') }}">‹</button>
             <button type="button" class="ts-coverflow__nav ts-coverflow__nav--next" data-hero-next aria-label="{{ __('ui.home.carousel.next') }}">›</button>
         </div>
+    </div>
+
+    <div class="ts-coverflow__progress" aria-hidden="true">
+        <span class="ts-coverflow__progress-bar" data-hero-progress></span>
     </div>
 </section>
 @endif

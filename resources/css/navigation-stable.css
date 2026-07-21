@@ -23,7 +23,9 @@
 
 .ts-coverflow__glow,
 .ts-coverflow__scrim,
-.ts-coverflow__bgs {
+.ts-coverflow__bgs,
+.ts-coverflow__noise,
+.ts-coverflow__progress {
     pointer-events: none !important;
 }
 
