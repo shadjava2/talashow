@@ -1019,6 +1019,16 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEpisodeViewTracking();
     setupScheduledLocalClock();
 
+    // Header sticky translucide au scroll
+    const header = document.querySelector('[data-ts-header]');
+    if (header) {
+        const onScroll = () => {
+            header.classList.toggle('is-scrolled', window.scrollY > 12);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+    }
+
     // Toasts (pro)
     const toasts = document.querySelectorAll('.js-toast');
     toasts.forEach((toast) => {

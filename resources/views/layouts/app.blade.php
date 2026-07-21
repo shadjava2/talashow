@@ -70,7 +70,7 @@
     <x-layout.ambient-bg />
     <div class="ts-app-shell__content relative z-10 isolate">
     <!-- Navigation -->
-    <nav class="ts-chrome-nav ts-chrome-nav--top-safe border-b sticky top-0 z-50">
+    <nav class="ts-chrome-nav ts-chrome-nav--top-safe border-b sticky top-0 z-50" data-ts-header>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @php
                 $siteLogo = $settings->get('site_logo_url') ?: asset('logo.svg');
@@ -92,26 +92,26 @@
                     @auth
                         @if(!auth()->user()->hasActiveSubscription())
                             <a href="{{ route('payment.recharge') }}"
-                               class="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-[12px] font-semibold">
+                               class="ts-header-btn ts-header-btn--primary text-[12px]">
                                 {{ __('ui.nav.subscribe') }}
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('payment.recharge') }}"
-                           class="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-[12px] font-semibold">
-                            {{ __('ui.nav.subscribe') }}
+                        <a href="{{ route('login') }}"
+                           class="ts-header-btn ts-header-btn--primary text-[12px]">
+                            {{ __('ui.nav.login') }}
                         </a>
                     @endauth
 
                     <a href="{{ route('payment.recharge') }}"
-                       class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-[12px] font-semibold inline-flex items-center gap-2">
+                       class="ts-header-btn ts-header-btn--ghost text-[12px]">
                         <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
                         </svg>
                         <span>{{ __('ui.nav.buy_coins') }}</span>
                     </a>
                     <a href="{{ route('payment.donation') }}"
-                       class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-[12px] font-semibold inline-flex items-center gap-2">
+                       class="ts-header-btn ts-header-btn--ghost text-[12px]">
                         <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
                         </svg>
@@ -178,70 +178,62 @@
 
                     <!-- User Menu -->
                     @auth
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-center gap-2">
                             @if(auth()->user()->hasActiveSubscription())
                                 <a href="{{ route('payment.recharge') }}"
-                                   class="inline-flex px-3 py-2 bg-green-600/20 border border-green-600/40 text-green-200 rounded-lg transition text-sm font-semibold">
+                                   class="ts-header-btn ts-header-btn--soft">
                                     {{ __('ui.nav.subscriber') }}
                                 </a>
                             @else
                                 <a href="{{ route('payment.recharge') }}"
-                                   class="inline-flex px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-semibold">
+                                   class="ts-header-btn ts-header-btn--primary">
                                     {{ __('ui.nav.subscribe') }}
                                 </a>
                             @endif
 
                             <a href="{{ route('payment.recharge') }}"
-                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
-                                <span class="inline-flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
-                                    </svg>
-                                    <span>{{ __('ui.nav.buy_coins') }}</span>
-                                </span>
+                               class="ts-header-btn ts-header-btn--ghost">
+                                <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
+                                </svg>
+                                <span>{{ __('ui.nav.buy_coins') }}</span>
                             </a>
                             <a href="{{ route('payment.donation') }}"
-                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
-                                <span class="inline-flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
-                                    </svg>
-                                    <span>{{ __('ui.nav.donation') }}</span>
-                                </span>
+                               class="ts-header-btn ts-header-btn--ghost">
+                                <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
+                                </svg>
+                                <span>{{ __('ui.nav.donation') }}</span>
                             </a>
-                            <a href="{{ route('payment.recharge') }}" class="text-sm text-gray-300 hover:text-white">
+                            <a href="{{ route('payment.recharge') }}" class="text-sm text-gray-300 hover:text-white px-1">
                                 <span class="font-semibold text-red-500">{{ auth()->user()->total_coins }}</span> {{ __('ui.nav.coins') }}
                             </a>
-                            <a href="{{ route('profile') }}" class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                            <a href="{{ route('profile') }}" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
                                 <span class="text-sm">{{ substr(auth()->user()->name, 0, 1) }}</span>
                             </a>
                         </div>
                     @else
                         <div class="flex items-center gap-2">
+                            <a href="{{ route('login') }}" class="ts-header-btn ts-header-btn--primary">
+                                {{ __('ui.nav.login') }}
+                            </a>
                             <a href="{{ route('payment.recharge') }}"
-                               class="inline-flex px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-semibold">
+                               class="ts-header-btn ts-header-btn--ghost">
                                 {{ __('ui.nav.subscribe') }}
                             </a>
                             <a href="{{ route('payment.recharge') }}"
-                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
-                                <span class="inline-flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
-                                    </svg>
-                                    <span>{{ __('ui.nav.buy_coins') }}</span>
-                                </span>
+                               class="ts-header-btn ts-header-btn--ghost">
+                                <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
+                                </svg>
+                                <span>{{ __('ui.nav.buy_coins') }}</span>
                             </a>
                             <a href="{{ route('payment.donation') }}"
-                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
-                                <span class="inline-flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
-                                    </svg>
-                                    <span>{{ __('ui.nav.donation') }}</span>
-                                </span>
-                            </a>
-                            <a href="{{ route('login') }}" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-medium">
-                                {{ __('ui.nav.login') }}
+                               class="ts-header-btn ts-header-btn--ghost">
+                                <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
+                                </svg>
+                                <span>{{ __('ui.nav.donation') }}</span>
                             </a>
                         </div>
                     @endauth
