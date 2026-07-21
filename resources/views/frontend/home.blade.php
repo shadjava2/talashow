@@ -46,17 +46,20 @@
                             </div>
                             <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-[1.02] mb-4">{{ $series->titleForLocale() }}</h1>
                             <p class="text-base md:text-lg ts-text-secondary mb-4 max-w-xl line-clamp-3">{{ Str::limit($series->descriptionForLocale(), 200) }}</p>
-                            <p class="ts-hero-ep-count mb-4">
-                                {{ trans_choice('ui.home.episodes_count', (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0), ['count' => (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0)]) }}
-                            </p>
-                            @if(is_array($series->genres ?? null) && count($series->genres))
-                                <div class="ts-hero-genres flex flex-wrap gap-2 mb-6">
-                                    @foreach(array_slice($series->genres, 0, 4) as $g)
-                                        @php $k = strtolower(trim((string) $g)); $label = ($genreNameMap ?? [])[$k] ?? (string) $g; @endphp
-                                        <span class="ts-hero-genre-chip">{{ $label }}</span>
-                                    @endforeach
-                                </div>
-                            @endif
+                            {{-- Max 2 chips : genre principal + compteur d’épisodes --}}
+                            <div class="ts-hero-meta flex flex-wrap items-center gap-2 mb-6">
+                                @if(is_array($series->genres ?? null) && count($series->genres))
+                                    @php
+                                        $g0 = $series->genres[0];
+                                        $gk = strtolower(trim((string) $g0));
+                                        $gLabel = ($genreNameMap ?? [])[$gk] ?? (string) $g0;
+                                    @endphp
+                                    <span class="ts-hero-genre-chip">{{ $gLabel }}</span>
+                                @endif
+                                <span class="ts-hero-ep-count">
+                                    {{ trans_choice('ui.home.episodes_count', (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0), ['count' => (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0)]) }}
+                                </span>
+                            </div>
                             <div class="flex flex-wrap gap-3">
                                 <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--primary px-6 py-3 rounded-lg font-semibold transition">
                                     {{ ($series->published_at && $series->published_at->isFuture()) ? __('ui.home.view_date') : __('ui.home.watch_now') }}
