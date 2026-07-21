@@ -993,15 +993,47 @@ html, body {
     margin-bottom: 1rem;
 }
 
-.ts-dramabox-row__scroll {
-    margin: 0;
-    padding-left: max(1rem, calc((100% - 80rem) / 2 + 1rem));
+.ts-dramabox-row__inner {
+    width: 100%;
+}
+
+.ts-dramabox-row__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 0.85rem;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .ts-dramabox-row__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.1rem 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .ts-dramabox-row__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .ts-dramabox-row__grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1.25rem 1.1rem;
+    }
 }
 
 @media (min-width: 1280px) {
-    .ts-dramabox-row__scroll {
-        padding-left: max(1.5rem, calc((100vw - 80rem) / 2 + 1.5rem));
+    .ts-dramabox-row__grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
     }
+}
+
+.ts-dramabox-row__grid .ts-poster-card--row {
+    width: 100%;
+    min-width: 0;
+    scroll-snap-align: unset;
 }
 
 .ts-section-head--dramabox .ts-section-head__title {
@@ -1084,107 +1116,39 @@ html, body {
     margin: 0;
 }
 
+/* Ancien carrousel horizontal — désactivé (grille DramaBox) */
+.ts-catalog-row__nav {
+    display: none !important;
+}
+
 .ts-catalog-row__viewport {
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: 0.25rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 8px 0.25rem 12px;
-}
-
-.ts-catalog-row__viewport::-webkit-scrollbar {
-    display: none;
-}
-
-.ts-catalog-row__viewport:focus-visible {
-    outline: 2px solid var(--ts-accent);
-    outline-offset: 4px;
-    border-radius: 0.5rem;
+    overflow: visible;
+    padding: 0;
 }
 
 .ts-catalog-row__track {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: clamp(9rem, 14vw, 11.5rem);
-    gap: 16px;
-    align-items: start;
-    padding-block: 8px;
+    display: contents;
 }
 
 .ts-poster-card--row {
-    flex: none;
     width: 100%;
     min-width: 0;
-    scroll-snap-align: start;
-}
-
-.ts-catalog-row__nav {
-    display: none !important;
-    position: absolute;
-    top: 50%;
-    z-index: 20;
-    transform: translateY(-50%);
-    width: 2.75rem;
-    height: 5.5rem;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    line-height: 1;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 0.35rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, background 0.2s ease, visibility 0.2s ease;
-    pointer-events: none !important;
-}
-
-@media (min-width: 768px) and (hover: hover) {
-    .ts-catalog-row:hover .ts-catalog-row__nav:not(:disabled),
-    .ts-catalog-row:focus-within .ts-catalog-row__nav:not(:disabled) {
-        display: flex !important;
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto !important;
-    }
-
-    .ts-catalog-row__nav:hover {
-        background: rgba(20, 20, 20, 0.92);
-    }
-
-    .ts-catalog-row__nav--prev {
-        left: 0;
-    }
-
-    .ts-catalog-row__nav--next {
-        right: 0;
-    }
-
-    .ts-catalog-row__nav:disabled {
-        opacity: 0.25;
-        pointer-events: none;
-        cursor: default;
-    }
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .ts-catalog-row-section .ts-poster-card--row:hover,
-    .ts-catalog-row-section .ts-poster-card--ranked:hover {
+    .ts-dramabox-row__grid .ts-poster-card--row:hover,
+    .ts-dramabox-row__grid .ts-poster-card--ranked:hover {
         z-index: 2;
     }
 
-    .ts-catalog-row-section .ts-poster-card--row:hover .ts-poster-card__media,
-    .ts-catalog-row-section .ts-poster-card--ranked:hover .ts-poster-card__media {
-        transform: scale(1.04) translateZ(0);
+    .ts-dramabox-row__grid .ts-poster-card--row:hover .ts-poster-card__media,
+    .ts-dramabox-row__grid .ts-poster-card--ranked:hover .ts-poster-card__media {
+        transform: scale(1.03) translateZ(0);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
-    .ts-catalog-row-section .ts-poster-card--row:hover .ts-poster-card__img,
-    .ts-catalog-row-section .ts-poster-card--ranked:hover .ts-poster-card__img {
+    .ts-dramabox-row__grid .ts-poster-card--row:hover .ts-poster-card__img,
+    .ts-dramabox-row__grid .ts-poster-card--ranked:hover .ts-poster-card__img {
         transform: none;
     }
 }

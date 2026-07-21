@@ -21,7 +21,7 @@
     </div>
     @if($moreUrl)
         <a href="{{ $moreUrl }}" class="ts-section-head__more">
-            {{ $moreLabel ?? __('ui.catalog.more') }} ›
+            {{ $moreLabel ?? __('ui.catalog.more') }}
         </a>
     @endif
 </div>
