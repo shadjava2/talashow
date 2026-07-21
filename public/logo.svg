@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240" role="img" aria-label="Talashow">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ff2d55"/>
+      <stop offset="1" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="720" height="240" rx="28" fill="#0b1220"/>
+  <rect x="22" y="22" width="676" height="196" rx="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <g transform="translate(48,56)">
+    <rect x="0" y="10" width="84" height="84" rx="18" fill="url(#g)"/>
+    <path d="M33 30h18c10 0 18 8 18 18s-8 18-18 18H33V30z" fill="rgba(0,0,0,0.35)"/>
+    <path d="M40 38h9c6 0 11 5 11 11s-5 11-11 11h-9V38z" fill="#0b1220" opacity="0.85"/>
+    <text x="110" y="66" fill="#ffffff" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="54" font-weight="900" letter-spacing="1">
+      TALA<tspan fill="url(#g)">SHOW</tspan>
+    </text>
+    <text x="112" y="100" fill="rgba(255,255,255,0.65)" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="16" font-weight="600">
+      Streaming • Séries • Coins & Abonnements
+    </text>
+  </g>
+</svg>
+

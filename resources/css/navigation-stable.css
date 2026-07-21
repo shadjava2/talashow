@@ -1,0 +1,132 @@
+/**
+ * Navigation stable — zones cliquables fiables (PC + mobile)
+ * Cause principale des "zones mortes" : calques décoratifs (hero 3D, rangées, chat)
+ * qui interceptent la souris sans action visible.
+ */
+
+/* Contenu principal toujours au-dessus du fond décoratif */
+.ts-app-shell__content {
+    position: relative;
+    z-index: 10;
+    isolation: isolate;
+}
+
+.ts-main-content {
+    position: relative;
+    z-index: 10;
+}
+
+/* Hero : le conteneur capte les clics vides ; seuls les contrôles restent actifs */
+.hero-carousel {
+    pointer-events: auto;
+}
+
+.hero-stage,
+.hero-slide,
+.hero-bg,
+.hero-overlay {
+    pointer-events: none !important;
+}
+
+.hero-content,
+.hero-nav,
+.hero-rail-wrap,
+.hero-rail-wrap * {
+    pointer-events: auto;
+}
+
+/* Slides lointaines masquées (évite calques fantômes à droite/gauche) */
+.hero-slide[aria-hidden="true"] {
+    visibility: hidden;
+    opacity: 0 !important;
+}
+
+/* Rangées catalogue : pas de plaque invisible sur toute la largeur */
+.ts-catalog-row {
+    pointer-events: none;
+}
+
+.ts-catalog-row__viewport,
+.ts-catalog-row__track,
+.ts-catalog-row__track > *,
+.ts-catalog-row__nav:not(:disabled) {
+    pointer-events: auto;
+}
+
+.ts-dramabox-row__head,
+.ts-dramabox-row__head a {
+    pointer-events: auto;
+}
+
+/* Cartes & liens — zone tactile claire */
+.ts-poster-card,
+.ts-episode-card__link,
+.ts-drama-tabs__chip,
+.ts-episode-pills__chip,
+.ts-hero-genre-chip {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.ts-poster-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Modales fermées = aucun blocage */
+#ts-modal.hidden,
+#ts-newsletter-modal.hidden,
+#share-modal.hidden,
+#guest-gate-modal.hidden {
+    pointer-events: none !important;
+    visibility: hidden;
+}
+
+/* Tawk.to : visible au-dessus du menu mobile (ne pas bloquer pointer-events) */
+#tawkchat-container,
+.tawk-min-container,
+.tawk-max-container,
+iframe[title*="chat" i] {
+    z-index: 100000 !important;
+}
+
+@media (max-width: 767px) {
+    .tawk-min-container {
+        bottom: calc(4.75rem + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* Liens de navigation principale */
+.ts-nav-link {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ts-text-muted);
+    transition: color 0.2s ease;
+    padding: 0.35rem 0.15rem;
+}
+
+.ts-nav-link:hover {
+    color: var(--ts-text-primary);
+}
+
+.ts-nav-link.is-active {
+    color: var(--ts-text-primary);
+    font-weight: 700;
+}
+
+/* Focus visible pour navigation clavier */
+a:focus-visible,
+button:focus-visible,
+.ts-poster-card:focus-visible,
+.ts-episode-card__link:focus-visible {
+    outline: 2px solid #ef4444;
+    outline-offset: 3px;
+}
+
+/* Supprime l’ancienne règle globale z-index sur tous les liens (source de conflits) */
+.ts-app-shell__content a:not(.ts-poster-card):not(.ts-episode-card__link),
+.ts-app-shell__content button {
+    position: relative;
+}

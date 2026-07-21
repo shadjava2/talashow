@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@php
+    $settings = $settings ?? app(\App\Services\SettingsService::class);
+@endphp
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="Talashow - Plateforme de streaming vidéo premium">
+
+    <title>@yield('title', 'Talashow') - Talashow</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0b0b0e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo.svg') }}">
+    <meta name="apple-mobile-web-app-title" content="Talashow">
+    {{-- Note: iOS préfère un apple-touch-icon en PNG. Ici on met le SVG existant en fallback. --}}
+
+    <!-- Fonts: preconnect + load async pour ne pas bloquer le rendu -->
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link rel="preload" href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet"></noscript>
+
+    {{-- CDN médias (Bunny) : pull zone images + stream ; l’épisode ajoute preconnect vers l’origine HLS résolue --}}
+    @php
+        $bunnyHost = config('services.bunny_stream.cdn_hostname');
+        $bunnyHost = is_string($bunnyHost) ? trim(preg_replace('#^https?://#i', '', $bunnyHost) ?? '') : '';
+        $bunnyStorageCdn = rtrim((string) config('services.bunny_storage.cdn_url'), '/');
+        $bunnyStorageHost = $bunnyStorageCdn !== '' ? (parse_url($bunnyStorageCdn, PHP_URL_HOST) ?: '') : '';
+    @endphp
+    @if($bunnyStorageHost !== '')
+    <link rel="dns-prefetch" href="https://{{ $bunnyStorageHost }}">
+    <link rel="preconnect" href="https://{{ $bunnyStorageHost }}" crossorigin>
+    @endif
+    @if($bunnyHost !== '')
+    <link rel="dns-prefetch" href="https://{{ $bunnyHost }}">
+    <link rel="preconnect" href="https://{{ $bunnyHost }}" crossorigin>
+    @endif
+
+    <!-- Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+
+    {{-- Service Worker: en local, on évite le cache “stale”. Pour tester PWA en local, activer manuellement. --}}
+    <script>
+        (function () {
+            // Fuseau horaire Talashow (choisi via backoffice) — utilisé par certains UI (compte à rebours, horloge “chez nous”).
+            window.TALASHOW_PLATFORM_TZ = @json(config('app.timezone', 'UTC'));
+
+            // Permet de tester la PWA en dev.
+            // - TALASHOW_ENABLE_SW_LOCAL=true => autorise SW sur localhost (sinon on le désactive pour éviter le cache “stale”)
+            // - TALASHOW_PWA_DEV_HOSTS=host1,host2 => liste d’hôtes considérés comme “dev” côté front (ex: IP Tailscale)
+            @php
+                $enableSwLocal = filter_var(env('TALASHOW_ENABLE_SW_LOCAL', false), FILTER_VALIDATE_BOOL);
+            @endphp
+            window.TALASHOW_ENABLE_SW_LOCAL = @json($enableSwLocal);
+            @php
+                $talashowPwaDevHosts = array_values(array_filter(array_map('trim', explode(',', (string) env('TALASHOW_PWA_DEV_HOSTS', '')))));
+            @endphp
+            window.TALASHOW_PWA_DEV_HOSTS = @json($talashowPwaDevHosts);
+        })();
+    </script>
+</head>
+    <body class="ts-app-shell text-white font-sans antialiased overflow-x-hidden">
+    <x-layout.ambient-bg />
+    <div class="ts-app-shell__content relative z-10 isolate">
+    <!-- Navigation -->
+    <nav class="ts-chrome-nav border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @php
+                $siteLogo = $settings->get('site_logo_url') ?: asset('logo.svg');
+            @endphp
+
+            {{-- Mobile header (minimal): Logo + S'abonner + Achat + Donation --}}
+            <div class="ts-mobile-only md:hidden h-16 flex items-center justify-between">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
+                    <img
+                        src="{{ $siteLogo }}"
+                        alt="Talashow"
+                        class="h-7 max-h-7 w-auto max-w-[120px] object-contain rounded-md shadow-lg shadow-black/20"
+                        data-no-skeleton
+                        onerror="this.onerror=null; this.src='{{ asset('logo.svg') }}';"
+                    />
+                </a>
+
+                <div class="flex items-center gap-2">
+                    @auth
+                        @if(!auth()->user()->hasActiveSubscription())
+                            <a href="{{ route('payment.recharge') }}"
+                               class="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-[12px] font-semibold">
+                                {{ __('ui.nav.subscribe') }}
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('payment.recharge') }}"
+                           class="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-[12px] font-semibold">
+                            {{ __('ui.nav.subscribe') }}
+                        </a>
+                    @endauth
+
+                    <a href="{{ route('payment.recharge') }}"
+                       class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-[12px] font-semibold inline-flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
+                        </svg>
+                        <span>{{ __('ui.nav.buy_coins') }}</span>
+                    </a>
+                    <a href="{{ route('payment.donation') }}"
+                       class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-[12px] font-semibold inline-flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
+                        </svg>
+                        <span>{{ __('ui.nav.donation') }}</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- Desktop header --}}
+            <div class="hidden md:flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="{{ route('home') }}" class="flex items-center gap-2">
+                        <img
+                            src="{{ $siteLogo }}"
+                            alt="Talashow"
+                            class="h-10 w-auto rounded-md shadow-lg shadow-black/20"
+                            data-no-skeleton
+                            onerror="this.onerror=null; this.src='{{ asset('logo.svg') }}';"
+                        />
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ route('home') }}" class="ts-nav-link {{ request()->routeIs('home') ? 'is-active' : '' }}">{{ __('ui.nav.home') }}</a>
+                    <a href="{{ route('browse') }}" class="ts-nav-link {{ request()->routeIs('browse') ? 'is-active' : '' }}">{{ __('ui.nav.genre') }}</a>
+                    <a href="{{ route('application') }}" class="ts-nav-link {{ request()->routeIs('application') ? 'is-active' : '' }}">{{ __('ui.nav.application') }}</a>
+                </div>
+
+                <!-- Right Side -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="hidden md:block">
+                        <div class="relative">
+                            <form method="GET" action="{{ route('browse') }}">
+                                <input
+                                    type="text"
+                                    name="search"
+                                    value="{{ request('search') }}"
+                                    placeholder="{{ __('ui.nav.search') }}"
+                                    autocomplete="off"
+                                    class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 pr-10 w-64 text-sm focus:outline-none focus:border-red-600 transition"
+                                >
+                                @if(request('genre') && request('genre') !== 'all')
+                                    <input type="hidden" name="genre" value="{{ request('genre') }}">
+                                @endif
+                                <button
+                                    type="submit"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10 transition"
+                                    aria-label="{{ __('ui.nav.search') }}"
+                                    title="{{ __('ui.nav.search') }}"
+                                >
+                                    <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                            <svg class="pointer-events-none w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    @auth
+                        <div class="flex items-center space-x-3">
+                            @if(auth()->user()->hasActiveSubscription())
+                                <a href="{{ route('payment.recharge') }}"
+                                   class="inline-flex px-3 py-2 bg-green-600/20 border border-green-600/40 text-green-200 rounded-lg transition text-sm font-semibold">
+                                    {{ __('ui.nav.subscriber') }}
+                                </a>
+                            @else
+                                <a href="{{ route('payment.recharge') }}"
+                                   class="inline-flex px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-semibold">
+                                    {{ __('ui.nav.subscribe') }}
+                                </a>
+                            @endif
+
+                            <a href="{{ route('payment.recharge') }}"
+                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
+                                    </svg>
+                                    <span>{{ __('ui.nav.buy_coins') }}</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('payment.donation') }}"
+                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
+                                    </svg>
+                                    <span>{{ __('ui.nav.donation') }}</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('payment.recharge') }}" class="text-sm text-gray-300 hover:text-white">
+                                <span class="font-semibold text-red-500">{{ auth()->user()->total_coins }}</span> {{ __('ui.nav.coins') }}
+                            </a>
+                            <a href="{{ route('profile') }}" class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                                <span class="text-sm">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                            </a>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('payment.recharge') }}"
+                               class="inline-flex px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-semibold">
+                                {{ __('ui.nav.subscribe') }}
+                            </a>
+                            <a href="{{ route('payment.recharge') }}"
+                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M12 2C7.03 2 3 4.24 3 7v10c0 2.76 4.03 5 9 5s9-2.24 9-5V7c0-2.76-4.03-5-9-5Zm0 2c4.06 0 7 .99 7 3s-2.94 3-7 3-7-.99-7-3 2.94-3 7-3Zm0 16c-4.06 0-7-.99-7-3v-2.02C6.53 16.2 9.15 17 12 17s5.47-.8 7-2.02V17c0 2.01-2.94 3-7 3Zm0-5c-4.06 0-7-.99-7-3V9.98C6.53 11.2 9.15 12 12 12s5.47-.8 7-2.02V12c0 2.01-2.94 3-7 3Z"/>
+                                    </svg>
+                                    <span>{{ __('ui.nav.buy_coins') }}</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('payment.donation') }}"
+                               class="inline-flex px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M20 7h-2.18A3 3 0 0 0 12 4.18 3 3 0 0 0 6.18 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2Zm-8-1.5A1.5 1.5 0 0 1 13.5 7H12V5.5ZM10.5 7A1.5 1.5 0 0 1 12 5.5V7h-1.5ZM4 9h16v2H4V9Zm2 4h6v8H6v-8Zm8 0h4v8h-4v-8Z"/>
+                                    </svg>
+                                    <span>{{ __('ui.nav.donation') }}</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('login') }}" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-medium">
+                                {{ __('ui.nav.login') }}
+                            </a>
+                        </div>
+                    @endauth
+
+                    {{-- Lang switcher (single model) --}}
+                    @include('components.lang-switcher')
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {{-- Bouton Retour (global) --}}
+    <button
+        id="ts-back-button"
+        type="button"
+        class="fixed left-4 z-[95] bottom-[calc(5.25rem+env(safe-area-inset-bottom))] md:bottom-6 hidden items-center gap-2 px-3 py-2 rounded-full bg-black/45 hover:bg-black/60 border border-white/10 text-white text-sm font-semibold backdrop-blur shadow-lg shadow-black/30"
+        aria-label="{{ __('ui.common.back') }}"
+        title="{{ __('ui.common.back') }}"
+    >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 18l-6-6 6-6"/>
+        </svg>
+        <span class="hidden sm:inline">{{ __('ui.common.back') }}</span>
+    </button>
+    <script>
+        (function () {
+            const btn = document.getElementById('ts-back-button');
+            if (!btn) return;
+            const isHome = (window.location.pathname === '/' || window.location.pathname === @json(parse_url(route('home'), PHP_URL_PATH) ?: '/'));
+            function canGoBack() {
+                try {
+                    if (window.history.length > 1) return true;
+                    if (document.referrer) {
+                        const r = new URL(document.referrer);
+                        return r.origin === window.location.origin;
+                    }
+                } catch (e) {}
+                return false;
+            }
+            if (!isHome && canGoBack()) {
+                btn.classList.remove('hidden');
+                btn.classList.add('flex');
+            }
+            btn.addEventListener('click', function () {
+                try {
+                    if (isHome) return;
+                    if (canGoBack()) {
+                        window.history.back();
+                        return;
+                    }
+                } catch (e) {}
+                window.location.href = @json(route('home'));
+            });
+        })();
+    </script>
+
+    <!-- Main Content -->
+    <main class="ts-main-content pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 relative z-10">
+        {{-- Toasts (pro) --}}
+        <div id="toast-root" class="fixed top-4 right-4 z-[60] w-auto max-w-sm space-y-3 pointer-events-none" aria-live="polite">
+            @if(session('success'))
+                <div class="js-toast pointer-events-auto bg-green-600/90 border border-green-500/40 text-white px-4 py-3 rounded-xl shadow-lg shadow-black/30 backdrop-blur">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="text-sm font-semibold">{{ __('ui.common.success') }}</div>
+                        <button type="button" class="js-toast-close text-white/80 hover:text-white transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                    </div>
+                    <div class="mt-1 text-sm text-white/95">{{ session('success') }}</div>
+                </div>
+            @endif
+
+            @if(session('error') || $errors->any())
+                <div class="js-toast pointer-events-auto bg-red-600/90 border border-red-500/40 text-white px-4 py-3 rounded-xl shadow-lg shadow-black/30 backdrop-blur">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="text-sm font-semibold">{{ __('ui.common.action_impossible') }}</div>
+                        <button type="button" class="js-toast-close text-white/80 hover:text-white transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                    </div>
+                    <div class="mt-1 text-sm text-white/95">
+                        @if(session('error'))
+                            <div>{{ session('error') }}</div>
+                        @endif
+                        @foreach($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Modal confirm (style bootstrap, UX pro) --}}
+        <div id="ts-modal" class="fixed inset-0 z-[70] hidden" aria-hidden="true">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="relative w-full h-full flex items-center justify-center p-4">
+                <div class="w-full max-w-lg bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div id="ts-modal-title" class="text-lg font-semibold text-white">{{ __('ui.common.confirmation') }}</div>
+                        <button id="ts-modal-close" type="button" class="text-white/70 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div id="ts-modal-message" class="text-sm text-gray-200 leading-relaxed"></div>
+                    </div>
+                    <div class="px-5 py-4 border-t border-gray-800 flex items-center justify-end gap-2">
+                        <button id="ts-modal-cancel" type="button" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                            {{ __('ui.common.cancel') }}
+                        </button>
+                        <button id="ts-modal-confirm" type="button" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition">
+                            {{ __('ui.common.confirm') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Newsletter modal (auto invite) --}}
+        @php
+            $newsletterInviteEligible = false;
+            $newsletterPrefillEmail = null;
+            try {
+                if (auth()->check() && method_exists(auth()->user(), 'hasActiveSubscription') && !auth()->user()->hasActiveSubscription()) {
+                    $newsletterPrefillEmail = (string) (auth()->user()->email ?? '');
+                    $emailLower = strtolower(trim($newsletterPrefillEmail));
+                    $alreadyConfirmed = false;
+                    if ($emailLower !== '') {
+                        $alreadyConfirmed = \App\Models\NewsletterSubscriber::query()
+                            ->where('email', $emailLower)
+                            ->whereNotNull('confirmed_at')
+                            ->whereNull('unsubscribed_at')
+                            ->exists();
+                    }
+                    $newsletterInviteEligible = !$alreadyConfirmed;
+                }
+            } catch (\Throwable) {
+                // no-op (ne jamais casser le rendu)
+            }
+        @endphp
+        <script>
+            window.TALASHOW_NEWSLETTER_INVITE_ELIGIBLE = {{ $newsletterInviteEligible ? 'true' : 'false' }};
+            window.TALASHOW_NEWSLETTER_PREFILL_EMAIL = @json($newsletterPrefillEmail);
+        </script>
+
+        <div id="ts-newsletter-modal" class="fixed inset-0 z-[80] hidden" aria-hidden="true">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="relative w-full h-full flex items-center justify-center p-4">
+                <div class="w-full max-w-md bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="text-lg font-semibold text-white">{{ __('ui.newsletter.title') }}</div>
+                        <button id="ts-newsletter-close" type="button" class="text-white/70 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                    </div>
+                    <form id="ts-newsletter-form" class="px-5 py-4 space-y-4" data-ts-validate="form" novalidate>
+                        @csrf
+                        <div>
+                            <label for="ts-newsletter-email" class="block text-sm mb-2">{{ __('ui.common.email') }}</label>
+                            <input
+                                id="ts-newsletter-email"
+                                name="email"
+                                type="email"
+                                required
+                                autocomplete="email"
+                                class="w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg focus:outline-none focus:border-red-600"
+                                placeholder="{{ __('ui.newsletter.email_placeholder') }}"
+                            />
+                            <p class="text-xs text-gray-400 mt-2">
+                                {{ __('ui.newsletter.subtitle') }}
+                            </p>
+                        </div>
+                        <input type="hidden" name="source" value="nonsubscriber_popup" />
+
+                        <div class="flex items-center justify-end gap-2">
+                            <button type="button" id="ts-newsletter-cancel" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                                {{ __('ui.common.later') }}
+                            </button>
+                            <button type="button" id="ts-newsletter-resend" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                                {{ __('ui.newsletter.resend') }}
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition">
+                                {{ __('ui.newsletter.subscribe') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @yield('content')
+    </main>
+
+    {{-- Bottom Navigation (mobile app-like): Accueil / Genre / Profil|Connexion / Langue --}}
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[90] ts-chrome-nav ts-chrome-nav--bottom pb-[env(safe-area-inset-bottom)]">
+        <div class="max-w-7xl mx-auto px-3">
+            <div class="h-16 grid grid-cols-4 items-center">
+                {{-- Home --}}
+                <a href="{{ route('home') }}"
+                   class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('home') ? 'text-red-400' : 'text-gray-300' }}">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
+                    </svg>
+                    <span>{{ __('ui.nav.home') }}</span>
+                </a>
+
+                {{-- Genre --}}
+                <a href="{{ route('browse') }}"
+                   class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('browse') ? 'text-red-400' : 'text-gray-300' }}">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
+                    </svg>
+                    <span>{{ __('ui.nav.genre') }}</span>
+                </a>
+
+                {{-- Profile / Login --}}
+                @auth
+                    <a href="{{ route('profile') }}"
+                       class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('profile') ? 'text-red-400' : 'text-gray-300' }}">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
+                        </svg>
+                        <span>{{ __('ui.nav.profile') }}</span>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}"
+                       class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('login') ? 'text-red-400' : 'text-gray-300' }}">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5ZM4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8v2H4v14h8v2Z"/>
+                        </svg>
+                        <span>{{ __('ui.nav.login') }}</span>
+                    </a>
+                @endauth
+
+                {{-- Langue (dropdown) --}}
+                <details class="relative flex flex-col items-center justify-center">
+                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 text-[11px] text-gray-300">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm7.93 9h-3.17a15.7 15.7 0 0 0-1.15-5.01A8.02 8.02 0 0 1 19.93 11ZM12 4c.92 0 2.55 2.12 3.32 7H8.68C9.45 6.12 11.08 4 12 4ZM4.07 13h3.17c.2 1.78.62 3.53 1.25 5.04A8.02 8.02 0 0 1 4.07 13Zm3.17-2H4.07a8.02 8.02 0 0 1 4.26-5.02A15.7 15.7 0 0 0 7.24 11Zm1.44 2h6.64c-.78 4.88-2.4 7-3.32 7-.92 0-2.55-2.12-3.32-7Zm7.83 5.04c.63-1.51 1.05-3.26 1.25-5.04h3.17a8.02 8.02 0 0 1-4.42 5.04Z"/>
+                        </svg>
+                        <span>{{ __('ui.nav.language') }}</span>
+                    </summary>
+                    <div class="absolute bottom-14 right-0 z-[80] min-w-[9rem] bg-gray-900 border border-gray-700/60 rounded-xl shadow-2xl shadow-black/40 p-2">
+                        <div class="flex flex-col gap-2">
+                            <a href="{{ route('lang.switch', 'fr') }}"
+                               onclick="this.closest('details')?.removeAttribute('open')"
+                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'fr' ? 'bg-red-600 text-white' : 'bg-white/10 text-gray-200 hover:bg-white/20' }}">
+                                FR
+                            </a>
+                            <a href="{{ route('lang.switch', 'en') }}"
+                               onclick="this.closest('details')?.removeAttribute('open')"
+                               class="w-full text-center px-3 py-2 rounded-lg text-sm font-semibold {{ app()->getLocale() === 'en' ? 'bg-red-600 text-white' : 'bg-white/10 text-gray-200 hover:bg-white/20' }}">
+                                EN
+                            </a>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Footer -->
+    <footer class="ts-chrome-footer border-t mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.about_title') }}</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{{ route('legal.terms') }}" class="hover:text-white transition">{{ __('ui.footer.terms') }}</a></li>
+                        <li><a href="{{ route('legal.privacy') }}" class="hover:text-white transition">{{ __('ui.footer.privacy') }}</a></li>
+                        <li><a href="{{ route('legal.cookies') }}" class="hover:text-white transition">{{ __('ui.footer.cookies') }}</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.write_us') }}</h3>
+                    @php
+                        $contactEmail = $settings->get('footer_contact_email');
+                        $businessLabel = $settings->get('footer_business_label', "Coopération d'affaires");
+                        $businessUrl = $settings->get('footer_business_url');
+                    @endphp
+                    @if($contactEmail)
+                        <a href="mailto:{{ $contactEmail }}" class="text-sm text-gray-400 hover:text-white transition">{{ $contactEmail }}</a>
+                    @else
+                        <span class="text-sm text-gray-500">{{ __('ui.footer.email_missing') }}</span>
+                    @endif
+                    @if($businessUrl)
+                        <a href="{{ $businessUrl }}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-gray-400 hover:text-white transition">{{ $businessLabel ?: "Coopération d'affaires" }}</a>
+                    @endif
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.contact') }}</h3>
+                    @php
+                        $phone = $settings->get('footer_phone');
+                        $tel = $phone ? preg_replace('/\s+/', '', $phone) : null;
+                    @endphp
+                    @if($phone)
+                        <a href="tel:{{ $tel }}" class="text-sm text-gray-400 hover:text-white transition">{{ $phone }}</a>
+                    @else
+                        <span class="text-sm text-gray-500">{{ __('ui.footer.phone_missing') }}</span>
+                    @endif
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">{{ __('ui.footer.community') }}</h3>
+                    @php
+                        $fb = $settings->get('social_facebook_url');
+                        $yt = $settings->get('social_youtube_url');
+                        $tt = $settings->get('social_tiktok_url');
+                    @endphp
+
+                    <div class="flex flex-wrap gap-x-4 gap-y-2">
+                        @if($fb)
+                            <a href="{{ $fb }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Facebook</a>
+                        @endif
+                        @if($yt)
+                            <a href="{{ $yt }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Youtube</a>
+                        @endif
+                        @if($tt)
+                            <a href="{{ $tt }}" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition">Tiktok</a>
+                        @endif
+
+                        @if(!$fb && !$yt && !$tt)
+                            <span class="text-sm text-gray-500">{{ __('ui.footer.links_missing') }}</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
+                <span>{{ __('ui.footer.copyright') }}</span>
+                <span class="mx-2">·</span>
+                <a href="https://mpakadev.com/" target="_blank" rel="noopener"
+                   class="text-gray-300 hover:text-white underline underline-offset-4 transition">
+                    {{ __('ui.footer.developed_by') }}
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <x-layout.tawk :settings="$settings" />
+
+    @stack('scripts')
+    </div>
+</body>
+</html>
