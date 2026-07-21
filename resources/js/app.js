@@ -396,9 +396,7 @@ function setupSeriesEngagement() {
 
                 const liked = !!data?.liked;
                 likeBtn.dataset.liked = liked ? '1' : '0';
-                const icon = likeBtn.querySelector('svg');
-                icon?.classList.toggle('text-red-400', liked);
-                icon?.classList.toggle('text-white/80', !liked);
+                likeBtn.classList.toggle('is-active', liked);
 
                 const countEl = document.getElementById('ts-like-count');
                 if (countEl && typeof data?.likes_count === 'number') {
@@ -432,16 +430,7 @@ function setupSeriesEngagement() {
 
                 const favorited = !!data?.favorited;
                 favBtn.dataset.favorited = favorited ? '1' : '0';
-
-                // Styles
-                favBtn.classList.toggle('bg-red-600/20', favorited);
-                favBtn.classList.toggle('border-red-500/30', favorited);
-                favBtn.classList.toggle('bg-white/10', !favorited);
-                favBtn.classList.toggle('border-white/10', !favorited);
-
-                const icon = favBtn.querySelector('svg');
-                icon?.classList.toggle('text-amber-300', favorited);
-                icon?.classList.toggle('text-white/80', !favorited);
+                favBtn.classList.toggle('is-active', favorited);
 
                 const label = favBtn.querySelector('.ts-fav-label');
                 if (label) {
