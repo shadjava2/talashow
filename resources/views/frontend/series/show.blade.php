@@ -23,10 +23,10 @@
         </div>
 
         <div class="ts-series-hero__inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav class="ts-series-hero__crumb text-sm text-gray-300/90 mb-4">
-                <a href="{{ route('home') }}" class="hover:text-white">{{ __('ui.nav.home') }}</a>
+            <nav class="ts-series-hero__crumb text-sm mb-4">
+                <a href="{{ route('home') }}">{{ __('ui.nav.home') }}</a>
                 <span class="mx-2 opacity-60">›</span>
-                <span class="text-white/90 line-clamp-1">{{ $series->titleForLocale() }}</span>
+                <span class="ts-series-hero__crumb-current line-clamp-1">{{ $series->titleForLocale() }}</span>
             </nav>
 
             <div class="ts-series-hero__grid">
@@ -71,7 +71,7 @@
         @if($epCount === 0)
             <div class="ts-series-episodes__empty">
                 <p class="text-lg font-bold">{{ __('ui.series.no_episodes_title') }}</p>
-                <p class="text-sm text-gray-400 mt-2">{{ __('ui.series.no_episodes_subtitle') }}</p>
+                <p class="text-sm ts-text-muted mt-2">{{ __('ui.series.no_episodes_subtitle') }}</p>
                 <a href="{{ route('home') }}" class="inline-block mt-5 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold">
                     {{ __('ui.series.back_home') }}
                 </a>
@@ -115,7 +115,7 @@
         @if($series->tags)
             <div class="flex flex-wrap gap-2 mt-4">
                 @foreach($series->tags as $tag)
-                    <span class="px-3 py-1 rounded-full text-sm bg-white/8 border border-white/10">{{ $tag }}</span>
+                    <span class="ts-series-about__tag">{{ $tag }}</span>
                 @endforeach
             </div>
         @endif
