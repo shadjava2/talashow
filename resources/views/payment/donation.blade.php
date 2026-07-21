@@ -6,9 +6,9 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
-            <h1 class="text-3xl font-bold">{{ __('ui.payment.donation.title') }}</h1>
+            <h1 class="text-3xl font-bold ts-page-title">{{ __('ui.payment.donation.title') }}</h1>
         </div>
-        <a href="{{ route('payment.recharge') }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm font-semibold">
+        <a href="{{ route('payment.recharge') }}" class="ts-header-btn ts-header-btn--ghost text-sm">
             {{ __('ui.payment.donation.see_recharge') }}
         </a>
     </div>
@@ -16,27 +16,27 @@
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- User Info --}}
         <div class="lg:col-span-1">
-            <div class="bg-gray-800 rounded-lg p-6">
+            <div class="ts-surface ts-surface--pad">
                 <div class="text-center mb-4">
-                    <div class="w-20 h-20 bg-gray-700 rounded-full mx-auto flex items-center justify-center mb-4">
-                        <span class="text-2xl font-bold">{{ substr($user->name, 0, 1) }}</span>
+                    <div class="ts-avatar-circle">
+                        <span>{{ substr($user->name, 0, 1) }}</span>
                     </div>
-                    <h3 class="text-xl font-semibold">{{ $user->name }}</h3>
-                    <p class="text-gray-400">{{ __('ui.common.id') }}: {{ $user->id }}</p>
+                    <h3 class="text-xl font-semibold" style="color: var(--ts-text-primary)">{{ $user->name }}</h3>
+                    <p class="ts-text-muted text-sm">{{ __('ui.common.id') }}: {{ $user->id }}</p>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between">
-                        <span class="text-gray-400">{{ __('ui.nav.coins') }}</span>
-                        <span class="font-semibold">{{ $user->coins }}</span>
+                        <span class="ts-text-muted">{{ __('ui.nav.coins') }}</span>
+                        <span class="font-semibold" style="color: var(--ts-text-primary)">{{ $user->coins }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">{{ __('ui.payment.reward_coins') }}</span>
-                        <span class="font-semibold">{{ $user->reward_coins }}</span>
+                        <span class="ts-text-muted">{{ __('ui.payment.reward_coins') }}</span>
+                        <span class="font-semibold" style="color: var(--ts-text-primary)">{{ $user->reward_coins }}</span>
                     </div>
-                    <div class="pt-3 border-t border-gray-700">
+                    <div class="pt-3" style="border-top: 1px solid var(--ts-border)">
                         <div class="flex justify-between">
-                            <span class="text-gray-400">{{ __('ui.common.total') }}</span>
-                            <span class="font-bold text-red-500">{{ $user->total_coins }}</span>
+                            <span class="ts-text-muted">{{ __('ui.common.total') }}</span>
+                            <span class="font-bold text-red-600">{{ $user->total_coins }}</span>
                         </div>
                     </div>
                 </div>
@@ -45,20 +45,20 @@
 
         {{-- Donation Packs --}}
         <div class="lg:col-span-2">
-            <div id="payment-not-configured-alert" class="hidden mb-6 bg-red-600/15 border border-red-600/30 rounded-lg p-4 text-red-100">
+            <div id="payment-not-configured-alert" class="hidden mb-6 ts-callout ts-callout--danger">
                 <span class="font-semibold">{{ __('ui.payment.not_configured_title') }}</span>
                 {{ __('ui.payment.not_configured_subtitle') }}
             </div>
 
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold">{{ __('ui.payment.donation.free_title') }}</h2>
-                <p class="text-sm text-gray-300 mt-2">
+            <div class="ts-surface ts-surface--pad mb-6">
+                <h2 class="text-xl font-semibold" style="color: var(--ts-text-primary)">{{ __('ui.payment.donation.free_title') }}</h2>
+                <p class="text-sm ts-text-secondary mt-2">
                     {{ __('ui.payment.donation.free_subtitle') }}
                 </p>
 
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                     <div class="md:col-span-2">
-                        <label class="block text-sm mb-2">{{ __('ui.payment.donation.amount_label', ['currency' => $paypalCurrency]) }}</label>
+                        <label class="block text-sm mb-2 font-semibold" style="color: var(--ts-text-primary)">{{ __('ui.payment.donation.amount_label', ['currency' => $paypalCurrency]) }}</label>
                         <input
                             id="donation_amount"
                             type="number"
@@ -67,9 +67,9 @@
                             max="{{ $maxDonation }}"
                             step="0.01"
                             placeholder="{{ __('ui.payment.donation.amount_placeholder') }}"
-                            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg"
+                            class="ts-input"
                         />
-                        <p class="text-xs text-gray-400 mt-2">
+                        <p class="text-xs ts-text-muted mt-2">
                             {{ __('ui.payment.donation.thanks_hint') }}
                         </p>
                     </div>
@@ -77,20 +77,20 @@
                         <button
                             type="button"
                             id="donation_custom_btn"
-                            class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition"
+                            class="ts-cta-accent w-full py-3 px-4 rounded-lg text-sm font-semibold transition"
                         >
                             {{ __('ui.payment.donation.give_now') }}
                         </button>
                     </div>
                 </div>
             </div>
-            <div id="donation-payment-step-wrap" class="bg-gray-800 rounded-lg p-6 hidden">
-                <h3 class="font-semibold text-lg mb-2">{{ __('ui.payment.payment_step_title') }}</h3>
-                <p class="text-sm text-gray-300 mb-4">{!! __('ui.payment.pay_step_intro_donation') !!}</p>
+            <div id="donation-payment-step-wrap" class="ts-surface ts-surface--pad hidden">
+                <h3 class="font-semibold text-lg mb-2" style="color: var(--ts-text-primary)">{{ __('ui.payment.payment_step_title') }}</h3>
+                <p class="text-sm ts-text-secondary mb-4">{!! __('ui.payment.pay_step_intro_donation') !!}</p>
                 <div id="paypal-area" class="{{ $paypalEnabled ? '' : 'hidden' }}">
                     @if($paypalEnabled)
                         <div id="paypal-button-container" class="max-w-md"></div>
-                        <p id="paypal-status" class="text-xs text-gray-400 mt-2"></p>
+                        <p id="paypal-status" class="text-xs ts-text-muted mt-2"></p>
                     @endif
                 </div>
             </div>
@@ -149,7 +149,7 @@
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
   const statusEl = document.getElementById('paypal-status');
   const btnContainer = document.getElementById('paypal-button-container');
-  let selection = null; // { kind, donation_amount }
+  let selection = null;
 
   function setStatus(msg) { if (statusEl) statusEl.textContent = msg || ''; }
 
@@ -157,7 +157,6 @@
 
   window.paypal.Buttons({
     createOrder: async () => {
-      // Donation libre (si présent)
       if (window.__talaDonationCustomSelection) {
         selection = window.__talaDonationCustomSelection;
         window.__talaDonationCustomSelection = null;
@@ -212,4 +211,3 @@
 </script>
 @endif
 @endpush
-

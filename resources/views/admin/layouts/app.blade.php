@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark" data-ts-force-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - Talashow</title>
+    <script>
+        (function () {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.setAttribute('data-ts-force-theme', 'dark');
+        })();
+    </script>
 
     @php
         $bunnyStorageCdn = rtrim((string) config('services.bunny_storage.cdn_url'), '/');

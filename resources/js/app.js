@@ -995,12 +995,16 @@ function setupScheduledLocalClock() {
     window.addEventListener('pagehide', () => window.clearInterval(t), { once: true });
 }
 
-// Theme dark / light
+// Theme dark / light (front public only — admin reste toujours dark)
 function setupThemeToggle() {
     const KEY = 'talashow-theme';
+    const root = document.documentElement;
+    const forceDark = root.getAttribute('data-ts-force-theme') === 'dark'
+        || /^\/admin(\/|$)/.test(window.location.pathname);
 
     const getTheme = () => {
-        const attr = document.documentElement.getAttribute('data-theme');
+        if (forceDark) return 'dark';
+        const attr = root.getAttribute('data-theme');
         if (attr === 'light' || attr === 'dark') return attr;
         try {
             const saved = localStorage.getItem(KEY);
@@ -1017,13 +1021,15 @@ function setupThemeToggle() {
         };
     };
 
-    const applyTheme = (theme) => {
-        const next = theme === 'light' ? 'light' : 'dark';
+    const applyTheme = (theme, { persist = true } = {}) => {
+        const next = forceDark ? 'dark' : (theme === 'light' ? 'light' : 'dark');
         const labels = readLabels();
-        document.documentElement.setAttribute('data-theme', next);
-        try {
-            localStorage.setItem(KEY, next);
-        } catch (e) {}
+        root.setAttribute('data-theme', next);
+        if (persist && !forceDark) {
+            try {
+                localStorage.setItem(KEY, next);
+            } catch (e) {}
+        }
         window.__TALASHOW_THEME__ = next;
 
         const meta = document.querySelector('meta[data-ts-theme-color]');
@@ -1043,7 +1049,9 @@ function setupThemeToggle() {
         });
     };
 
-    applyTheme(getTheme());
+    applyTheme(getTheme(), { persist: false });
+
+    if (forceDark) return;
 
     document.querySelectorAll('[data-ts-theme-toggle]').forEach((btn) => {
         btn.addEventListener('click', () => {

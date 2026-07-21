@@ -145,7 +145,7 @@ return [
         'title' => 'App',
         'badge_soon' => 'Soon',
         'heading' => 'Talashow is coming to mobile',
-        'subtitle_html' => 'The Talashow app will soon be available on <span class="font-semibold text-white">Google Play</span> and <span class="font-semibold text-white">App Store</span>. Enable notifications to be informed when it launches.',
+        'subtitle_html' => 'The Talashow app will soon be available on <span class="font-semibold" style="color: var(--ts-accent)">Google Play</span> and <span class="font-semibold" style="color: var(--ts-accent)">App Store</span>. Enable notifications to be informed when it launches.',
         'notify_me' => 'Notify me',
         'back_home' => 'Back to home',
         'feature_1_title' => 'Smooth playback',

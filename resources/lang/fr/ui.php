@@ -144,7 +144,7 @@ return [
         'title' => 'Application',
         'badge_soon' => 'Bientôt',
         'heading' => 'Talashow arrive sur mobile',
-        'subtitle_html' => 'L’application Talashow sera bientôt disponible sur <span class="font-semibold text-white">Google Play</span> et <span class="font-semibold text-white">App Store</span>. Active les notifications pour être informé du lancement.',
+        'subtitle_html' => 'L’application Talashow sera bientôt disponible sur <span class="font-semibold" style="color: var(--ts-accent)">Google Play</span> et <span class="font-semibold" style="color: var(--ts-accent)">App Store</span>. Active les notifications pour être informé du lancement.',
         'notify_me' => 'Me prévenir',
         'back_home' => 'Retour à l’accueil',
         'feature_1_title' => 'Lecture fluide',
