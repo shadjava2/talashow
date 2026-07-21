@@ -38,11 +38,6 @@
                 <a href="#" class="ts-btn ts-btn--primary px-6 py-3 font-semibold" data-hero-play>{{ __('ui.home.watch_now') }}</a>
                 <a href="#" class="ts-btn ts-btn--ghost px-6 py-3 font-semibold" data-hero-more>{{ __('ui.home.more_info') }}</a>
             </div>
-            <div class="ts-coverflow__dots" data-hero-dots data-hero-anim="6" role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
-                @foreach($heroSlides as $i => $series)
-                    <button type="button" class="ts-coverflow__dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-thumb data-index="{{ $i }}" aria-label="{{ __('ui.home.carousel.view_slide', ['title' => $series->titleForLocale()]) }}"></button>
-                @endforeach
-            </div>
         </div>
 
         <div class="ts-coverflow__stage-wrap" data-hero-anim="stage">
@@ -85,9 +80,21 @@
                     </button>
                 @endforeach
             </div>
-            <button type="button" class="ts-coverflow__nav ts-coverflow__nav--prev" data-hero-prev aria-label="{{ __('ui.home.carousel.prev') }}">‹</button>
-            <button type="button" class="ts-coverflow__nav ts-coverflow__nav--next" data-hero-next aria-label="{{ __('ui.home.carousel.next') }}">›</button>
         </div>
+    </div>
+
+    <div class="ts-coverflow__controls">
+        <button type="button" class="ts-coverflow__nav" data-hero-prev aria-label="{{ __('ui.home.carousel.prev') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="ts-coverflow__dots" data-hero-dots role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
+            @foreach($heroSlides as $i => $series)
+                <button type="button" class="ts-coverflow__dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-thumb data-index="{{ $i }}" aria-label="{{ __('ui.home.carousel.view_slide', ['title' => $series->titleForLocale()]) }}"></button>
+            @endforeach
+        </div>
+        <button type="button" class="ts-coverflow__nav" data-hero-next aria-label="{{ __('ui.home.carousel.next') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
+        </button>
     </div>
 
     <div class="ts-coverflow__progress" aria-hidden="true">

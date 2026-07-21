@@ -32,7 +32,8 @@
 .ts-coverflow__card,
 .ts-coverflow__nav,
 .ts-coverflow__dot,
-.ts-coverflow__actions a {
+.ts-coverflow__actions a,
+.ts-coverflow__controls {
     pointer-events: auto;
 }
 

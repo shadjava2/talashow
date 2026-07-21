@@ -12,20 +12,20 @@
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-8">
-        <div class="flex items-start justify-between gap-4 mb-4">
+        <div class="ts-browse-head">
             <div>
                 <h1 class="ts-page-browse__title">{{ __('ui.browse.title') }}</h1>
                 @if(request()->filled('search'))
                     <p class="text-sm ts-text-muted mt-2">
                         {{ __('ui.browse.results_for') }}
-                        <span class="text-white font-semibold">“{{ request('search') }}”</span>
+                        <span class="font-semibold" style="color: var(--ts-text-primary)">“{{ request('search') }}”</span>
                     </p>
                 @elseif($isCatalogMode)
                     <p class="text-sm ts-page-browse__intro mt-2">{{ __('ui.catalog.browse_intro') }}</p>
                 @endif
             </div>
             @if(request()->filled('search') || ($activeGenre && $activeGenre !== 'all'))
-                <a href="{{ route('browse') }}" class="text-sm text-gray-300 hover:text-white underline underline-offset-4 shrink-0">
+                <a href="{{ route('browse') }}" class="ts-link-reset shrink-0">
                     {{ __('ui.browse.reset') }}
                 </a>
             @endif
