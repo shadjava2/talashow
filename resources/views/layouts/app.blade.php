@@ -299,7 +299,7 @@
     </script>
 
     <!-- Main Content -->
-    <main class="ts-main-content pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 relative z-10">
+    <main class="ts-main-content pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 relative z-10">
         {{-- Toasts (pro) --}}
         <div id="toast-root" class="fixed top-4 right-4 z-[60] w-auto max-w-sm space-y-3 pointer-events-none" aria-live="polite">
             @if(session('success'))
@@ -563,7 +563,7 @@
             <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
                 <span>{{ __('ui.footer.copyright') }}</span>
                 <span class="mx-2">·</span>
-                <a href="https://mpakadev.com/" target="_blank" rel="noopener"
+                <a href="https://nexus.cosoft.app/" target="_blank" rel="noopener noreferrer"
                    class="text-gray-300 hover:text-white underline underline-offset-4 transition">
                     {{ __('ui.footer.developed_by') }}
                 </a>

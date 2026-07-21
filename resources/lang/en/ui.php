@@ -206,7 +206,7 @@ return [
         'phone_missing' => 'Phone number must be configured in the admin panel',
         'links_missing' => 'Links must be configured in the admin panel',
         'copyright' => '© Talashow, All Rights Reserved',
-        'developed_by' => 'Developed by Schadrack MPAKA',
+        'developed_by' => 'Developed by COSOFT',
     ],
     'newsletter' => [
         'title' => 'Get Talashow updates',

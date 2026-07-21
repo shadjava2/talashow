@@ -925,6 +925,20 @@ html, body {
 .ts-chrome-footer {
     background: linear-gradient(180deg, var(--ts-bg-deep) 0%, #050506 100%);
     border-color: var(--ts-border);
+    position: relative;
+    z-index: 10;
+}
+
+/* Mobile : laisser de la place sous le footer (nav fixe + safe-area) */
+@media (max-width: 767px) {
+    .ts-chrome-footer {
+        padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+    }
+
+    .ts-page-dramabox,
+    .ts-page-browse {
+        padding-bottom: 1rem;
+    }
 }
 
 /* Décor statique — ne bloque jamais les clics */

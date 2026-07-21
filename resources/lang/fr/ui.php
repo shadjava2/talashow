@@ -205,7 +205,7 @@ return [
         'phone_missing' => 'Numéro à configurer dans le backoffice',
         'links_missing' => 'Liens à configurer dans le backoffice',
         'copyright' => '© Talashow, Tous droits réservés',
-        'developed_by' => 'Développé par Schadrack MPAKA',
+        'developed_by' => 'Développé par COSOFT',
     ],
     'newsletter' => [
         'title' => 'Recevoir les nouveautés Talashow',
