@@ -248,7 +248,7 @@ html, body {
     background-size: 1000px 100%;
 }
 
-/* Hero carousel — Netflix-like, overlay L→R, pas de 3D */
+/* Hero carousel — 1 fond net, texte gauche, rail miniatures discret */
 .hero-carousel {
     position: relative;
     height: min(70vh, 600px);
@@ -269,8 +269,8 @@ html, body {
 .hero-slide {
     position: absolute;
     inset: 0;
-    transition: opacity 400ms ease-out, transform 400ms ease-out;
-    transform: translate3d(var(--tx, 0%), 0, 0);
+    transition: opacity 400ms ease-out;
+    transform: none;
     opacity: var(--op, 0);
     filter: none;
     z-index: var(--z, 1);
@@ -283,6 +283,7 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 20%;
     transform: none;
     pointer-events: none;
     user-select: none;
@@ -293,21 +294,32 @@ html, body {
     inset: 0;
     pointer-events: none;
     background:
-        linear-gradient(90deg, var(--ts-bg-deep) 0%, rgba(6, 6, 8, 0.55) 45%, rgba(6, 6, 8, 0.15) 75%, transparent 100%),
-        linear-gradient(0deg, var(--ts-bg-deep) 0%, transparent 40%, rgba(6, 6, 8, 0.55) 100%);
+        linear-gradient(90deg, var(--ts-bg-deep) 0%, rgba(6, 6, 8, 0.72) 42%, rgba(6, 6, 8, 0.15) 78%, transparent 100%),
+        linear-gradient(to top, var(--ts-bg-deep) 0%, transparent 40%);
 }
 
 .hero-content {
     position: relative;
-    z-index: 20;
+    z-index: 2;
     height: 100%;
     width: 100%;
     display: flex;
     align-items: center;
     pointer-events: auto;
-    /* laisse une zone “safe” pour le rail (miniatures) */
-    padding-bottom: 120px;
+    padding-bottom: 88px;
     text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+}
+
+.hero-content__copy {
+    max-width: 640px;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--ts-text-primary);
 }
 
 .hero-content h1 {
@@ -322,21 +334,22 @@ html, body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.10);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     color: #fff;
-    font-size: 32px;
-    line-height: 42px;
+    font-size: 28px;
+    line-height: 40px;
     text-align: center;
     z-index: 30;
     pointer-events: auto;
-    backdrop-filter: blur(10px);
     transition: background 150ms ease;
 }
-.hero-nav:hover { background: rgba(255,255,255,0.18); }
+.hero-nav:hover { background: rgba(255, 255, 255, 0.18); }
 .hero-prev { left: 14px; }
 .hero-next { right: 14px; }
 
@@ -344,98 +357,74 @@ html, body {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 6px;
+    bottom: 16px;
     z-index: 30;
     pointer-events: auto;
-    /* laisse de la place aux flèches (gauche/droite) */
-    padding: 0 74px;
+    padding: 0 clamp(16px, 5vw, 64px);
 }
 
 .hero-rail {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
-    padding: 10px 8px;
+    padding: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    background: rgba(0,0,0,0.12);
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 14px;
-    backdrop-filter: blur(10px);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
 }
 .hero-rail::-webkit-scrollbar { display: none; }
 
 .hero-thumb {
     flex: 0 0 auto;
-    display: grid;
-    grid-template-columns: 44px 1fr;
-    gap: 10px;
-    align-items: center;
-    min-width: 260px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
-    text-align: left;
-}
-.hero-thumb:hover { background: rgba(255,255,255,0.10); }
-.hero-thumb img {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    object-fit: cover;
-}
-.hero-thumb-title {
-    font-size: 13px;
-    line-height: 1.2;
-    font-weight: 700;
-    color: rgba(255,255,255,0.92);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.hero-thumb[aria-current="true"] {
-    border-color: rgba(229, 9, 20, 0.55);
-    background: rgba(229, 9, 20, 0.10);
-}
-
-.hero-poster {
-    position: relative;
-    width: 320px;
-    max-width: 320px;
-    aspect-ratio: 2 / 3;
+    display: block;
+    width: 48px;
+    height: 48px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
     border-radius: var(--ts-radius-card, 8px);
     overflow: hidden;
-    border: 1px solid var(--ts-border);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-    transform: none;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px solid transparent;
+    transition: border-color 180ms ease, opacity 180ms ease;
+    opacity: 0.72;
 }
-
-.hero-poster::after{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(0deg, rgba(0,0,0,0.55), rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.55));
-    pointer-events: none;
-}
-
-.hero-poster img{
+.hero-thumb:hover { opacity: 1; }
+.hero-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: none;
+    display: block;
+}
+.hero-thumb-title {
+    display: none;
+}
+
+.hero-thumb[aria-current="true"] {
+    border-color: var(--ts-accent);
+    opacity: 1;
 }
 
 @media (max-width: 768px) {
     .hero-carousel {
         height: 56vh;
-        min-height: 380px;
+        min-height: 360px;
     }
-    .hero-thumb { min-width: 220px; }
-    .hero-rail-wrap { padding: 0 14px; }
+    .hero-rail-wrap { padding: 0 14px; bottom: 12px; }
+    .hero-content { padding-bottom: 72px; }
+}
+
+.ts-page-main {
+    padding-bottom: 48px;
+}
+
+@media (max-width: 767px) {
+    .ts-page-main {
+        padding-bottom: 1rem;
+    }
 }
 
 /* --------------------------------------------------------------------------
@@ -1143,7 +1132,7 @@ html, body {
 
     .ts-dramabox-row__grid .ts-poster-card--row:hover .ts-poster-card__media,
     .ts-dramabox-row__grid .ts-poster-card--ranked:hover .ts-poster-card__media {
-        transform: scale(1.03) translateZ(0);
+        transform: scale(1.04) translateZ(0);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 

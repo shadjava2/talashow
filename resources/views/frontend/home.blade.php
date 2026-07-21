@@ -16,63 +16,42 @@
         @foreach($heroSlides as $i => $series)
             @php
                 $bg = $series->cover_image ?? $series->poster ?? '/images/placeholders/placeholder.svg';
-                $genres = null;
-                if (is_array($series->genres ?? null) && count($series->genres)) {
-                    $map = $genreNameMap ?? [];
-                    $items = array_slice($series->genres, 0, 3);
-                    $items = array_map(function ($x) use ($map) {
-                        $k = strtolower(trim((string) $x));
-                        return $map[$k] ?? (string) $x;
-                    }, $items);
-                    $genres = implode(', ', $items);
-                }
             @endphp
             <article class="hero-slide" data-hero-slide data-index="{{ $i }}" aria-hidden="{{ $i === 0 ? 'false' : 'true' }}">
                 <img class="hero-bg js-skeleton-img" src="{{ $imgUrl($bg) }}" alt="{{ $series->titleForLocale() }}"
                      loading="{{ $i === 0 ? 'eager' : 'lazy' }}" fetchpriority="{{ $i === 0 ? 'high' : 'auto' }}" decoding="async"
                      onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';">
-                <div class="hero-overlay"></div>
+                <div class="hero-overlay" aria-hidden="true"></div>
                 <div class="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="w-full grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-center">
-                        <div class="max-w-2xl">
-                            <div class="mb-4 flex items-center gap-2 flex-wrap">
-                                <span class="inline-flex items-center gap-2 px-3 py-1 text-white text-xs font-semibold rounded" style="background: var(--ts-accent)">{{ __('ui.home.exclusive_badge') }}</span>
-                                @if($series->published_at && $series->published_at->isFuture())
-                                    <span class="inline-flex items-center px-3 py-1 bg-white/10 border border-white/15 text-white text-xs font-semibold rounded">
-                                        {{ __('ui.home.available_on_datetime', ['date' => $series->published_at->format('d/m/Y'), 'time' => $series->published_at->format('H:i')]) }}
-                                    </span>
-                                @endif
-                                @if($series->rating)<span class="text-xs text-gray-300">★ {{ number_format($series->rating, 1) }}</span>@endif
-                            </div>
-                            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-[1.02] mb-4">{{ $series->titleForLocale() }}</h1>
-                            <p class="text-base md:text-lg ts-text-secondary mb-4 max-w-xl line-clamp-3">{{ Str::limit($series->descriptionForLocale(), 200) }}</p>
-                            {{-- Max 2 chips : genre principal + compteur d’épisodes --}}
-                            <div class="ts-hero-meta flex flex-wrap items-center gap-2 mb-6">
-                                @if(is_array($series->genres ?? null) && count($series->genres))
-                                    @php
-                                        $g0 = $series->genres[0];
-                                        $gk = strtolower(trim((string) $g0));
-                                        $gLabel = ($genreNameMap ?? [])[$gk] ?? (string) $g0;
-                                    @endphp
-                                    <span class="ts-hero-genre-chip">{{ $gLabel }}</span>
-                                @endif
-                                <span class="ts-hero-ep-count">
-                                    {{ trans_choice('ui.home.episodes_count', (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0), ['count' => (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0)]) }}
+                    <div class="hero-content__copy max-w-2xl">
+                        <div class="mb-4 flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center gap-2 px-3 py-1 text-white text-xs font-semibold rounded" style="background: var(--ts-accent)">{{ __('ui.home.exclusive_badge') }}</span>
+                            @if($series->published_at && $series->published_at->isFuture())
+                                <span class="inline-flex items-center px-3 py-1 bg-white/10 border border-white/15 text-white text-xs font-semibold rounded">
+                                    {{ __('ui.home.available_on_datetime', ['date' => $series->published_at->format('d/m/Y'), 'time' => $series->published_at->format('H:i')]) }}
                                 </span>
-                            </div>
-                            <div class="flex flex-wrap gap-3">
-                                <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--primary px-6 py-3 rounded-lg font-semibold transition">
-                                    {{ ($series->published_at && $series->published_at->isFuture()) ? __('ui.home.view_date') : __('ui.home.watch_now') }}
-                                </a>
-                                <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--ghost px-6 py-3 rounded-lg font-semibold transition">{{ __('ui.home.more_info') }}</a>
-                            </div>
+                            @endif
                         </div>
-                        <div class="hidden lg:block">
-                            <div class="hero-poster">
-                                <img class="js-skeleton-img" src="{{ $imgUrl($series->poster ?? $series->cover_image ?? '/images/placeholders/placeholder.svg') }}"
-                                     alt="{{ $series->titleForLocale() }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" decoding="async"
-                                     onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';">
-                            </div>
+                        <h1 class="hero-title mb-4">{{ $series->titleForLocale() }}</h1>
+                        <p class="text-base md:text-lg ts-text-secondary mb-4 max-w-xl line-clamp-3">{{ Str::limit($series->descriptionForLocale(), 200) }}</p>
+                        <div class="ts-hero-meta flex flex-wrap items-center gap-2 mb-6">
+                            @if(is_array($series->genres ?? null) && count($series->genres))
+                                @php
+                                    $g0 = $series->genres[0];
+                                    $gk = strtolower(trim((string) $g0));
+                                    $gLabel = ($genreNameMap ?? [])[$gk] ?? (string) $g0;
+                                @endphp
+                                <span class="ts-hero-genre-chip">{{ $gLabel }}</span>
+                            @endif
+                            <span class="ts-hero-ep-count">
+                                {{ trans_choice('ui.home.episodes_count', (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0), ['count' => (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0)]) }}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--primary px-6 py-3 rounded-lg font-semibold transition">
+                                {{ ($series->published_at && $series->published_at->isFuture()) ? __('ui.home.view_date') : __('ui.home.watch_now') }}
+                            </a>
+                            <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--ghost px-6 py-3 rounded-lg font-semibold transition">{{ __('ui.home.more_info') }}</a>
                         </div>
                     </div>
                 </div>
@@ -88,7 +67,6 @@
                     <img class="js-skeleton-img" src="{{ $imgUrl($series->poster ?? $series->cover_image ?? '/images/placeholders/placeholder.svg') }}"
                          alt="{{ $series->titleForLocale() }}" loading="lazy" decoding="async"
                          onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';">
-                    <span class="hero-thumb-title">{{ $series->titleForLocale() }}</span>
                 </button>
             @endforeach
         </div>
@@ -96,7 +74,7 @@
 </section>
 @endif
 
-<div class="ts-page-dramabox relative z-[2] pb-20" id="catalog-top">
+<div class="ts-page-dramabox ts-page-main relative z-[2]" id="catalog-top">
     @if($quickGenres->count())
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <x-catalog.category-tabs :genres="$quickGenres" />

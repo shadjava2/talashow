@@ -1040,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(hide, 5500);
     });
 
-    // Hero 3D carousel
+    // Hero carousel (fade only — pas de 3D)
     const root = document.querySelector('[data-hero-carousel]');
     if (root) {
         const slides = Array.from(root.querySelectorAll('[data-hero-slide]'));
@@ -1050,53 +1050,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let index = 0;
         let timer = null;
 
-        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
         const mod = (n, m) => ((n % m) + m) % m;
 
         function apply() {
-            const n = slides.length;
             slides.forEach((el, i) => {
-                const offset = i - index;
-                const abs = Math.abs(offset);
-                // Only render near slides for perf
-                if (abs > 2) {
-                    el.style.setProperty('--op', '0');
-                    el.style.setProperty('--blur', '12px');
-                    el.style.setProperty('--sat', '0.7');
-                    el.style.setProperty('--z', '1');
-                    el.style.setProperty('--tx', `${offset * 44}%`);
-                    el.style.setProperty('--ry', `${clamp(offset, -3, 3) * -18}deg`);
-                    el.style.setProperty('--sc', '0.86');
-                    el.style.setProperty('--tz', '-160px');
-                } else {
-                    const tx = offset * 42;
-                    const ry = clamp(offset, -2, 2) * -16;
-                    const sc = offset === 0 ? 1 : (abs === 1 ? 0.93 : 0.88);
-                    const tz = offset === 0 ? 0 : (abs === 1 ? -80 : -140);
-                    const op = offset === 0 ? 1 : (abs === 1 ? 0.65 : 0.25);
-                    const blur = offset === 0 ? 0 : (abs === 1 ? 0 : 6);
-                    const sat = offset === 0 ? 1 : (abs === 1 ? 0.95 : 0.85);
-                    const z = offset === 0 ? 6 : (abs === 1 ? 5 : 4);
-
-                    el.style.setProperty('--tx', `${tx}%`);
-                    el.style.setProperty('--ry', `${ry}deg`);
-                    el.style.setProperty('--sc', `${sc}`);
-                    el.style.setProperty('--tz', `${tz}px`);
-                    el.style.setProperty('--op', `${op}`);
-                    el.style.setProperty('--blur', `${blur}px`);
-                    el.style.setProperty('--sat', `${sat}`);
-                    el.style.setProperty('--z', `${z}`);
-                    el.setAttribute('aria-hidden', offset === 0 ? 'false' : 'true');
-                    el.style.visibility = abs > 1 ? 'hidden' : 'visible';
-                }
+                const active = i === index;
+                el.style.setProperty('--op', active ? '1' : '0');
+                el.style.setProperty('--z', active ? '6' : '1');
+                el.setAttribute('aria-hidden', active ? 'false' : 'true');
+                el.style.visibility = active ? 'visible' : 'hidden';
             });
 
             thumbs.forEach((t) => t.removeAttribute('aria-current'));
             const activeThumb = thumbs.find(t => Number(t.dataset.index) === index);
             if (activeThumb) {
                 activeThumb.setAttribute('aria-current', 'true');
-                // IMPORTANT UX: ne jamais "remonter" la page si l'utilisateur est ailleurs.
-                // On ne garde le thumb visible que si le carousel est déjà dans le viewport.
                 const rect = root.getBoundingClientRect();
                 const isRootVisible = rect.bottom > 0 && rect.top < window.innerHeight;
                 if (isRootVisible) {
@@ -1126,13 +1094,11 @@ document.addEventListener('DOMContentLoaded', () => {
             t.addEventListener('click', (e) => { e.stopPropagation(); go(Number(t.dataset.index)); });
         });
 
-        // Pause on hover/focus (cibles interactives uniquement)
         root.querySelector('.hero-content')?.addEventListener('mouseenter', stop);
         root.querySelector('.hero-rail-wrap')?.addEventListener('mouseenter', stop);
         root.querySelector('.hero-content')?.addEventListener('mouseleave', start);
         root.querySelector('.hero-rail-wrap')?.addEventListener('mouseleave', start);
 
-        // Touch swipe
         let x0 = null;
         root.addEventListener('touchstart', (e) => { x0 = e.touches?.[0]?.clientX ?? null; }, { passive: true });
         root.addEventListener('touchend', (e) => {
@@ -1143,7 +1109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
         }, { passive: true });
 
-        // Init
         go(0);
         start();
     }
