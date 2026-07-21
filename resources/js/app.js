@@ -1050,13 +1050,15 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(hide, 5500);
     });
 
-    // Hero coverflow 3D (NetShort-inspired, mobile plat)
+    // Hero : fond + coverflow 3D + texte gauche fluide
     const root = document.querySelector('[data-hero-carousel]');
     if (root) {
         const slides = Array.from(root.querySelectorAll('[data-hero-slide]'));
+        const bgs = Array.from(root.querySelectorAll('[data-hero-bg]'));
         const prevBtn = root.querySelector('[data-hero-prev]');
         const nextBtn = root.querySelector('[data-hero-next]');
         const dots = Array.from(root.querySelectorAll('[data-hero-thumb]'));
+        const infoEl = root.querySelector('[data-hero-info]');
         const titleEl = root.querySelector('[data-hero-title]');
         const descEl = root.querySelector('[data-hero-desc]');
         const metaEl = root.querySelector('[data-hero-meta]');
@@ -1066,27 +1068,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
         let index = 0;
         let timer = null;
+        let infoTimer = null;
 
         const mod = (n, m) => ((n % m) + m) % m;
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
-        function syncInfo(slide) {
+        function syncInfo(slide, animate) {
             if (!slide) return;
-            const title = slide.dataset.title || '';
-            const desc = slide.dataset.desc || '';
-            const genres = slide.dataset.genres || '';
-            const episodes = slide.dataset.episodes || '';
-            const url = slide.dataset.url || '#';
-            if (titleEl) titleEl.textContent = title;
-            if (descEl) descEl.textContent = desc;
-            if (metaEl) {
-                metaEl.textContent = [genres, episodes].filter(Boolean).join(' · ');
+            const applyText = () => {
+                const title = slide.dataset.title || '';
+                const desc = slide.dataset.desc || '';
+                const genres = slide.dataset.genres || '';
+                const episodes = slide.dataset.episodes || '';
+                const url = slide.dataset.url || '#';
+                if (titleEl) titleEl.textContent = title;
+                if (descEl) descEl.textContent = desc;
+                if (metaEl) metaEl.textContent = [genres, episodes].filter(Boolean).join(' · ');
+                if (playEl) playEl.setAttribute('href', url);
+                if (moreEl) moreEl.setAttribute('href', url);
+            };
+
+            if (!animate || reduced || !infoEl) {
+                applyText();
+                infoEl?.classList.remove('is-fading');
+                return;
             }
-            if (playEl) playEl.setAttribute('href', url);
-            if (moreEl) moreEl.setAttribute('href', url);
+
+            infoEl.classList.add('is-fading');
+            clearTimeout(infoTimer);
+            infoTimer = window.setTimeout(() => {
+                applyText();
+                requestAnimationFrame(() => infoEl.classList.remove('is-fading'));
+            }, 180);
         }
 
-        function apply() {
+        function apply(animateInfo = true) {
             const mobile = isMobile();
             slides.forEach((el, i) => {
                 const offset = i - index;
@@ -1097,18 +1113,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reduced) {
                     tx = 0; ry = 0; sc = active ? 1 : 0.9; tz = 0; op = active ? 1 : 0; z = active ? 8 : 1;
                 } else if (mobile) {
-                    tx = offset * 78;
+                    tx = offset * 72;
                     ry = 0;
-                    sc = active ? 1 : Math.max(0.78, 1 - abs * 0.12);
+                    sc = active ? 1 : Math.max(0.8, 1 - abs * 0.1);
                     tz = 0;
-                    op = abs > 2 ? 0 : (active ? 1 : Math.max(0.35, 1 - abs * 0.28));
+                    op = abs > 2 ? 0 : (active ? 1 : Math.max(0.4, 1 - abs * 0.25));
                     z = 10 - abs;
                 } else {
-                    tx = offset * 42;
-                    ry = clamp(offset, -3, 3) * -32;
-                    sc = active ? 1 : Math.max(0.7, 1 - abs * 0.11);
-                    tz = active ? 80 : -abs * 90;
-                    op = abs > 3 ? 0 : (active ? 1 : Math.max(0.32, 1 - abs * 0.22));
+                    tx = offset * 36;
+                    ry = clamp(offset, -3, 3) * -28;
+                    sc = active ? 1 : Math.max(0.72, 1 - abs * 0.1);
+                    tz = active ? 60 : -abs * 70;
+                    op = abs > 3 ? 0 : (active ? 1 : Math.max(0.35, 1 - abs * 0.2));
                     z = 20 - abs;
                 }
 
@@ -1123,6 +1139,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.tabIndex = active ? 0 : -1;
             });
 
+            bgs.forEach((bg) => {
+                bg.classList.toggle('is-active', Number(bg.dataset.index) === index);
+            });
+
             dots.forEach((d) => {
                 const on = Number(d.dataset.index) === index;
                 d.classList.toggle('is-active', on);
@@ -1130,12 +1150,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 else d.removeAttribute('aria-current');
             });
 
-            syncInfo(slides[index]);
+            syncInfo(slides[index], animateInfo);
         }
 
-        function go(next) {
+        function go(next, animateInfo = true) {
             index = mod(next, slides.length);
-            apply();
+            apply(animateInfo);
         }
 
         function start() {
@@ -1183,8 +1203,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, { passive: true });
 
-        window.addEventListener('resize', () => apply(), { passive: true });
-        go(0);
+        window.addEventListener('resize', () => apply(false), { passive: true });
+        go(0, false);
         start();
     }
 

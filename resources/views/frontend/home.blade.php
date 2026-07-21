@@ -12,62 +12,85 @@
 @if($featured->count() > 0)
 @php $heroSlides = $featured->take(6); @endphp
 <section class="ts-coverflow" data-hero-carousel aria-roledescription="carousel">
-    <div class="ts-coverflow__glow" aria-hidden="true"></div>
-
-    <div class="ts-coverflow__stage" data-coverflow-stage>
+    {{-- Fond plein écran (actif = slide courante) --}}
+    <div class="ts-coverflow__bgs" aria-hidden="true">
         @foreach($heroSlides as $i => $series)
-            @php
-                $poster = $series->poster ?? $series->cover_image ?? '/images/placeholders/placeholder.svg';
-                $desc = Str::limit(strip_tags((string) $series->descriptionForLocale()), 160);
-                $genreBits = [];
-                if (is_array($series->genres ?? null)) {
-                    foreach (array_slice($series->genres, 0, 2) as $g) {
-                        $k = strtolower(trim((string) $g));
-                        $genreBits[] = ($genreNameMap ?? [])[$k] ?? (string) $g;
-                    }
-                }
-                $epCount = (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0);
-            @endphp
-            <button
-                type="button"
-                class="ts-coverflow__card {{ $i === 0 ? 'is-active' : '' }}"
-                data-hero-slide
+            @php $bg = $series->cover_image ?? $series->poster ?? '/images/placeholders/placeholder.svg'; @endphp
+            <img
+                class="ts-coverflow__bg {{ $i === 0 ? 'is-active' : '' }}"
+                data-hero-bg
                 data-index="{{ $i }}"
-                data-title="{{ $series->titleForLocale() }}"
-                data-desc="{{ $desc }}"
-                data-url="{{ route('series.show', $series->slug) }}"
-                data-genres="{{ implode(' • ', $genreBits) }}"
-                data-episodes="{{ trans_choice('ui.home.episodes_count', $epCount, ['count' => $epCount]) }}"
-                aria-label="{{ $series->titleForLocale() }}"
-                aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"
+                src="{{ $imgUrl($bg) }}"
+                alt=""
+                loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
+                decoding="async"
+                onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';"
             >
-                <img
-                    class="ts-coverflow__img js-skeleton-img"
-                    src="{{ $imgUrl($poster) }}"
-                    alt="{{ $series->titleForLocale() }}"
-                    loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
-                    decoding="async"
-                    onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';"
-                >
-            </button>
         @endforeach
     </div>
+    <div class="ts-coverflow__scrim" aria-hidden="true"></div>
+    <div class="ts-coverflow__glow" aria-hidden="true"></div>
 
-    <button type="button" class="ts-coverflow__nav ts-coverflow__nav--prev" data-hero-prev aria-label="{{ __('ui.home.carousel.prev') }}">‹</button>
-    <button type="button" class="ts-coverflow__nav ts-coverflow__nav--next" data-hero-next aria-label="{{ __('ui.home.carousel.next') }}">›</button>
-
-    <div class="ts-coverflow__info max-w-3xl mx-auto px-4 text-center">
-        <p class="ts-coverflow__meta" data-hero-meta></p>
-        <h1 class="ts-coverflow__title" data-hero-title></h1>
-        <p class="ts-coverflow__desc" data-hero-desc></p>
-        <div class="ts-coverflow__actions">
-            <a href="#" class="ts-btn ts-btn--primary px-6 py-3 font-semibold" data-hero-play>{{ __('ui.home.watch_now') }}</a>
-            <a href="#" class="ts-btn ts-btn--ghost px-6 py-3 font-semibold" data-hero-more>{{ __('ui.home.more_info') }}</a>
+    <div class="ts-coverflow__layout max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {{-- Titre + description toujours visibles (gauche) --}}
+        <div class="ts-coverflow__copy" data-hero-info>
+            <span class="ts-coverflow__badge">{{ __('ui.home.exclusive_badge') }}</span>
+            <p class="ts-coverflow__meta" data-hero-meta></p>
+            <h1 class="ts-coverflow__title" data-hero-title></h1>
+            <p class="ts-coverflow__desc" data-hero-desc></p>
+            <div class="ts-coverflow__actions">
+                <a href="#" class="ts-btn ts-btn--primary px-6 py-3 font-semibold" data-hero-play>{{ __('ui.home.watch_now') }}</a>
+                <a href="#" class="ts-btn ts-btn--ghost px-6 py-3 font-semibold" data-hero-more>{{ __('ui.home.more_info') }}</a>
+            </div>
+            <div class="ts-coverflow__dots" data-hero-dots role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
+                @foreach($heroSlides as $i => $series)
+                    <button type="button" class="ts-coverflow__dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-thumb data-index="{{ $i }}" aria-label="{{ __('ui.home.carousel.view_slide', ['title' => $series->titleForLocale()]) }}"></button>
+                @endforeach
+            </div>
         </div>
-        <div class="ts-coverflow__dots" data-hero-dots role="tablist" aria-label="{{ __('ui.home.carousel.select') }}">
-            @foreach($heroSlides as $i => $series)
-                <button type="button" class="ts-coverflow__dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-thumb data-index="{{ $i }}" aria-label="{{ __('ui.home.carousel.view_slide', ['title' => $series->titleForLocale()]) }}"></button>
-            @endforeach
+
+        {{-- Stage 3D posters (droite) --}}
+        <div class="ts-coverflow__stage-wrap">
+            <div class="ts-coverflow__stage" data-coverflow-stage>
+                @foreach($heroSlides as $i => $series)
+                    @php
+                        $poster = $series->poster ?? $series->cover_image ?? '/images/placeholders/placeholder.svg';
+                        $desc = Str::limit(strip_tags((string) $series->descriptionForLocale()), 180);
+                        $genreBits = [];
+                        if (is_array($series->genres ?? null)) {
+                            foreach (array_slice($series->genres, 0, 2) as $g) {
+                                $k = strtolower(trim((string) $g));
+                                $genreBits[] = ($genreNameMap ?? [])[$k] ?? (string) $g;
+                            }
+                        }
+                        $epCount = (int) ($series->active_episodes_count ?? $series->total_episodes ?? 0);
+                    @endphp
+                    <button
+                        type="button"
+                        class="ts-coverflow__card {{ $i === 0 ? 'is-active' : '' }}"
+                        data-hero-slide
+                        data-index="{{ $i }}"
+                        data-title="{{ $series->titleForLocale() }}"
+                        data-desc="{{ $desc }}"
+                        data-url="{{ route('series.show', $series->slug) }}"
+                        data-genres="{{ implode(' • ', $genreBits) }}"
+                        data-episodes="{{ trans_choice('ui.home.episodes_count', $epCount, ['count' => $epCount]) }}"
+                        aria-label="{{ $series->titleForLocale() }}"
+                        aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"
+                    >
+                        <img
+                            class="ts-coverflow__img js-skeleton-img"
+                            src="{{ $imgUrl($poster) }}"
+                            alt="{{ $series->titleForLocale() }}"
+                            loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
+                            decoding="async"
+                            onerror="this.onerror=null; this.src='{{ asset('/images/placeholders/placeholder.svg') }}';"
+                        >
+                    </button>
+                @endforeach
+            </div>
+            <button type="button" class="ts-coverflow__nav ts-coverflow__nav--prev" data-hero-prev aria-label="{{ __('ui.home.carousel.prev') }}">‹</button>
+            <button type="button" class="ts-coverflow__nav ts-coverflow__nav--next" data-hero-next aria-label="{{ __('ui.home.carousel.next') }}">›</button>
         </div>
     </div>
 </section>

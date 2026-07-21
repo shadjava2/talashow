@@ -21,7 +21,9 @@
     pointer-events: auto;
 }
 
-.ts-coverflow__glow {
+.ts-coverflow__glow,
+.ts-coverflow__scrim,
+.ts-coverflow__bgs {
     pointer-events: none !important;
 }
 
