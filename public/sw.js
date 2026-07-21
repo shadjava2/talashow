@@ -1,5 +1,5 @@
 /* Talashow SW (simple cache + video warm-cache) */
-const CACHE_NAME = 'talashow-v7';
+const CACHE_NAME = 'talashow-v8';
 const OFFLINE_URL = '/offline.html';
 
 // Cache séparé pour les vidéos (HLS) — attention quota navigateur.
@@ -9,7 +9,9 @@ const VIDEO_MAX_ENTRIES = 80; // garde-fou (LRU approximatif)
 // Ne pas précacher '/' : HTML localisé (FR/EN) — sinon la langue “colle”
 const PRECACHE = [
   OFFLINE_URL,
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 function isVideoHost(hostname) {
@@ -51,6 +53,12 @@ function isSensitiveAppPath(pathname, method) {
   );
 }
 
+function isDocumentRequest(req) {
+  if (req.mode === 'navigate') return true;
+  const accept = req.headers.get('accept') || '';
+  return accept.includes('text/html');
+}
+
 async function limitCacheEntries(cacheName, maxEntries) {
   try {
     const cache = await caches.open(cacheName);
@@ -74,7 +82,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== VIDEO_CACHE)
+          .map((k) => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -84,14 +96,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
 
   // --- Video warm-cache (HLS / CDN) ---
-  // Important: on ne touche que les GET HLS, et on évite les Range (mp4 seek) pour ne pas casser la lecture.
   if (
     req.method === 'GET' &&
     isVideoHost(url.hostname) &&
     isHlsLike(url.pathname) &&
     !req.headers.has('range')
   ) {
-    // Manifest: network-first (fraîcheur), segments: cache-first (réutilisation).
     const isManifest = url.pathname.endsWith('.m3u8');
     event.respondWith((async () => {
       const cache = await caches.open(VIDEO_CACHE);
@@ -103,7 +113,6 @@ self.addEventListener('fetch', (event) => {
 
       try {
         const res = await fetch(req);
-        // Pour opaque responses (cross-origin), res.ok peut être false; on fait best-effort.
         if (res && (res.ok || res.type === 'opaque')) {
           cache.put(req, res.clone());
           limitCacheEntries(VIDEO_CACHE, VIDEO_MAX_ENTRIES);
@@ -112,7 +121,7 @@ self.addEventListener('fetch', (event) => {
       } catch (e) {
         const cached = await cache.match(req);
         if (cached) return cached;
-        throw e;
+        return Response.error();
       }
     })());
     return;
@@ -122,33 +131,36 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (isSensitiveAppPath(url.pathname, req.method)) {
-    event.respondWith(fetch(req));
-    return;
-  }
-
-  // Network-first for HTML — JAMAIS de cache HTML localisé (FR/EN dépend de cookies)
-  if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req, { cache: 'no-store' }).then((res) => res).catch(async () => {
-        return (await caches.match(OFFLINE_URL)) || Response.error();
-      })
+      fetch(req).catch(() => Response.error())
     );
     return;
   }
 
-  // Cache-first for assets
+  // Network-first for HTML / navigate / prefetch document — jamais de cache HTML localisé
+  if (isDocumentRequest(req)) {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then((res) => res)
+        .catch(async () => (await caches.match(OFFLINE_URL)) || Response.error())
+    );
+    return;
+  }
+
+  // Cache-first for assets (safe catch — évite Uncaught TypeError Failed to fetch)
   event.respondWith(
-    caches.match(req).then((cached) => {
+    caches.match(req).then(async (cached) => {
       if (cached) return cached;
-      return fetch(req).then((res) => {
-        // Eviter de cache des réponses non-OK
+      try {
+        const res = await fetch(req);
         if (res && res.ok) {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
         }
         return res;
-      });
+      } catch (_) {
+        return Response.error();
+      }
     })
   );
 });
-

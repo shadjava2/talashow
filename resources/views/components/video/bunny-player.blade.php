@@ -33,7 +33,6 @@
         loading="lazy"
         class="absolute inset-0 z-10 h-full w-full border-0 pointer-events-auto"
         allow="{{ $allow }}"
-        allowfullscreen
         referrerpolicy="strict-origin-when-cross-origin"
     ></iframe>
 </div>

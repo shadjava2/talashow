@@ -28,13 +28,15 @@
             }
         })();
     </script>
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192.png') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}">
     <meta name="apple-mobile-web-app-title" content="Talashow">
-    {{-- Note: iOS préfère un apple-touch-icon en PNG. Ici on met le SVG existant en fallback. --}}
+    {{-- PWA icons: PNG requis (Chrome refuse souvent SVG dans le manifest). --}}
 
     <!-- Fonts: preconnect + load async pour ne pas bloquer le rendu -->
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
