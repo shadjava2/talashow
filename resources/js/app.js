@@ -1050,37 +1050,87 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(hide, 5500);
     });
 
-    // Hero carousel (fade only — pas de 3D)
+    // Hero coverflow 3D (NetShort-inspired, mobile plat)
     const root = document.querySelector('[data-hero-carousel]');
     if (root) {
         const slides = Array.from(root.querySelectorAll('[data-hero-slide]'));
         const prevBtn = root.querySelector('[data-hero-prev]');
         const nextBtn = root.querySelector('[data-hero-next]');
-        const thumbs = Array.from(root.querySelectorAll('[data-hero-thumb]'));
+        const dots = Array.from(root.querySelectorAll('[data-hero-thumb]'));
+        const titleEl = root.querySelector('[data-hero-title]');
+        const descEl = root.querySelector('[data-hero-desc]');
+        const metaEl = root.querySelector('[data-hero-meta]');
+        const playEl = root.querySelector('[data-hero-play]');
+        const moreEl = root.querySelector('[data-hero-more]');
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
         let index = 0;
         let timer = null;
 
         const mod = (n, m) => ((n % m) + m) % m;
+        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+        function syncInfo(slide) {
+            if (!slide) return;
+            const title = slide.dataset.title || '';
+            const desc = slide.dataset.desc || '';
+            const genres = slide.dataset.genres || '';
+            const episodes = slide.dataset.episodes || '';
+            const url = slide.dataset.url || '#';
+            if (titleEl) titleEl.textContent = title;
+            if (descEl) descEl.textContent = desc;
+            if (metaEl) {
+                metaEl.textContent = [genres, episodes].filter(Boolean).join(' · ');
+            }
+            if (playEl) playEl.setAttribute('href', url);
+            if (moreEl) moreEl.setAttribute('href', url);
+        }
 
         function apply() {
+            const mobile = isMobile();
             slides.forEach((el, i) => {
-                const active = i === index;
-                el.style.setProperty('--op', active ? '1' : '0');
-                el.style.setProperty('--z', active ? '6' : '1');
+                const offset = i - index;
+                const abs = Math.abs(offset);
+                const active = offset === 0;
+                let tx, ry, sc, tz, op, z;
+
+                if (reduced) {
+                    tx = 0; ry = 0; sc = active ? 1 : 0.9; tz = 0; op = active ? 1 : 0; z = active ? 8 : 1;
+                } else if (mobile) {
+                    tx = offset * 78;
+                    ry = 0;
+                    sc = active ? 1 : Math.max(0.78, 1 - abs * 0.12);
+                    tz = 0;
+                    op = abs > 2 ? 0 : (active ? 1 : Math.max(0.35, 1 - abs * 0.28));
+                    z = 10 - abs;
+                } else {
+                    tx = offset * 42;
+                    ry = clamp(offset, -3, 3) * -32;
+                    sc = active ? 1 : Math.max(0.7, 1 - abs * 0.11);
+                    tz = active ? 80 : -abs * 90;
+                    op = abs > 3 ? 0 : (active ? 1 : Math.max(0.32, 1 - abs * 0.22));
+                    z = 20 - abs;
+                }
+
+                el.style.setProperty('--tx', String(tx));
+                el.style.setProperty('--ry', String(ry));
+                el.style.setProperty('--sc', String(sc));
+                el.style.setProperty('--tz', String(tz));
+                el.style.setProperty('--op', String(op));
+                el.style.setProperty('--z', String(z));
+                el.classList.toggle('is-active', active);
                 el.setAttribute('aria-hidden', active ? 'false' : 'true');
-                el.style.visibility = active ? 'visible' : 'hidden';
+                el.tabIndex = active ? 0 : -1;
             });
 
-            thumbs.forEach((t) => t.removeAttribute('aria-current'));
-            const activeThumb = thumbs.find(t => Number(t.dataset.index) === index);
-            if (activeThumb) {
-                activeThumb.setAttribute('aria-current', 'true');
-                const rect = root.getBoundingClientRect();
-                const isRootVisible = rect.bottom > 0 && rect.top < window.innerHeight;
-                if (isRootVisible) {
-                    activeThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
-                }
-            }
+            dots.forEach((d) => {
+                const on = Number(d.dataset.index) === index;
+                d.classList.toggle('is-active', on);
+                if (on) d.setAttribute('aria-current', 'true');
+                else d.removeAttribute('aria-current');
+            });
+
+            syncInfo(slides[index]);
         }
 
         function go(next) {
@@ -1090,7 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function start() {
             stop();
-            timer = window.setInterval(() => go(index + 1), 6500);
+            if (reduced || slides.length < 2) return;
+            timer = window.setInterval(() => go(index + 1), 5500);
         }
 
         function stop() {
@@ -1098,16 +1149,26 @@ document.addEventListener('DOMContentLoaded', () => {
             timer = null;
         }
 
-        prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); go(index - 1); });
-        nextBtn?.addEventListener('click', (e) => { e.stopPropagation(); go(index + 1); });
-        thumbs.forEach((t) => {
-            t.addEventListener('click', (e) => { e.stopPropagation(); go(Number(t.dataset.index)); });
+        prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); go(index - 1); start(); });
+        nextBtn?.addEventListener('click', (e) => { e.stopPropagation(); go(index + 1); start(); });
+        dots.forEach((d) => {
+            d.addEventListener('click', (e) => { e.stopPropagation(); go(Number(d.dataset.index)); start(); });
+        });
+        slides.forEach((s) => {
+            s.addEventListener('click', () => {
+                const i = Number(s.dataset.index);
+                if (i === index) {
+                    const url = s.dataset.url;
+                    if (url) window.location.href = url;
+                } else {
+                    go(i);
+                    start();
+                }
+            });
         });
 
-        root.querySelector('.hero-content')?.addEventListener('mouseenter', stop);
-        root.querySelector('.hero-rail-wrap')?.addEventListener('mouseenter', stop);
-        root.querySelector('.hero-content')?.addEventListener('mouseleave', start);
-        root.querySelector('.hero-rail-wrap')?.addEventListener('mouseleave', start);
+        root.addEventListener('mouseenter', stop);
+        root.addEventListener('mouseleave', start);
 
         let x0 = null;
         root.addEventListener('touchstart', (e) => { x0 = e.touches?.[0]?.clientX ?? null; }, { passive: true });
@@ -1116,9 +1177,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const x1 = e.changedTouches?.[0]?.clientX ?? x0;
             const dx = x1 - x0;
             x0 = null;
-            if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
+            if (Math.abs(dx) > 40) {
+                go(index + (dx < 0 ? 1 : -1));
+                start();
+            }
         }, { passive: true });
 
+        window.addEventListener('resize', () => apply(), { passive: true });
         go(0);
         start();
     }

@@ -48,7 +48,7 @@ class HomeController extends Controller
             return Series::where('is_featured', true)
                 ->frontendVisible()
                 ->orderBy('sort_order')
-                ->limit(5)
+                ->limit(6)
                 ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
                 ->get($heroCols);
         });

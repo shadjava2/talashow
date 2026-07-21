@@ -16,7 +16,23 @@
     z-index: 10;
 }
 
-/* Hero : le conteneur capte les clics vides ; seuls les contrôles restent actifs */
+/* Coverflow : stage capte les gestes ; cartes cliquables */
+.ts-coverflow {
+    pointer-events: auto;
+}
+
+.ts-coverflow__glow {
+    pointer-events: none !important;
+}
+
+.ts-coverflow__card,
+.ts-coverflow__nav,
+.ts-coverflow__dot,
+.ts-coverflow__actions a {
+    pointer-events: auto;
+}
+
+/* Legacy hero */
 .hero-carousel {
     pointer-events: auto;
 }
@@ -35,7 +51,6 @@
     pointer-events: auto;
 }
 
-/* Slides lointaines masquées (évite calques fantômes à droite/gauche) */
 .hero-slide[aria-hidden="true"] {
     visibility: hidden;
     opacity: 0 !important;
