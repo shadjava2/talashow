@@ -2069,11 +2069,6 @@ html[data-theme="light"] #ts-back-button {
     background: var(--ts-btn-ghost-bg-hover);
 }
 
-.ts-series-hero__episodes-link:hover,
-.ts-series-hero__share:hover {
-    background: rgba(255, 255, 255, 0.16);
-}
-
 .ts-series-episodes {
     scroll-margin-top: 5rem;
 }
