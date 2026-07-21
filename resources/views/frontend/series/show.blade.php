@@ -124,33 +124,33 @@
 
 {{-- Share modal --}}
 <div id="share-modal" class="fixed inset-0 z-[70] hidden" aria-hidden="true">
-    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="relative w-full h-full flex items-center justify-center p-4">
-        <div class="max-w-lg w-full bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-6">
+        <div class="max-w-lg w-full ts-panel ts-surface--pad">
             <div class="flex items-start justify-between gap-3">
                 <div>
-                    <h3 class="text-2xl font-bold">{{ __('ui.common.share') }}</h3>
-                    <p class="text-gray-300 mt-2">{{ __('ui.series.share_subtitle') }}</p>
+                    <h3 class="text-2xl font-bold ts-page-title">{{ __('ui.common.share') }}</h3>
+                    <p class="ts-text-secondary mt-2">{{ __('ui.series.share_subtitle') }}</p>
                 </div>
-                <button id="share-close" type="button" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm">{{ __('ui.common.close') }}</button>
+                <button id="share-close" type="button" class="ts-btn-soft text-sm">{{ __('ui.common.close') }}</button>
             </div>
             @php $shareUrl = url()->current(); $shareTitle = $series->titleForLocale(); @endphp
             <div class="mt-5">
-                <label class="text-xs text-gray-400">{{ __('ui.common.link') }}</label>
+                <label class="text-xs" style="color: var(--ts-text-muted)">{{ __('ui.common.link') }}</label>
                 <div class="mt-2 flex gap-2">
-                    <input id="share-link" readonly value="{{ $shareUrl }}" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200" />
-                    <button id="share-copy" type="button" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold whitespace-nowrap">{{ __('ui.common.copy') }}</button>
+                    <input id="share-link" readonly value="{{ $shareUrl }}" class="ts-input text-sm" />
+                    <button id="share-copy" type="button" class="ts-btn-primary whitespace-nowrap">{{ __('ui.common.copy') }}</button>
                 </div>
-                <div id="share-copied" class="hidden text-xs text-green-300 mt-2">{{ __('ui.common.link_copied') }}</div>
+                <div id="share-copied" class="hidden text-xs text-green-600 mt-2">{{ __('ui.common.link_copied') }}</div>
             </div>
             <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <a id="share-wa" target="_blank" rel="noopener" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-center">WhatsApp</a>
-                <a id="share-fb" target="_blank" rel="noopener" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-center">Facebook</a>
-                <a id="share-x" target="_blank" rel="noopener" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-center">X</a>
-                <a id="share-tg" target="_blank" rel="noopener" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-center">Telegram</a>
+                <a id="share-wa" target="_blank" rel="noopener" class="ts-btn-soft text-sm text-center">WhatsApp</a>
+                <a id="share-fb" target="_blank" rel="noopener" class="ts-btn-soft text-sm text-center">Facebook</a>
+                <a id="share-x" target="_blank" rel="noopener" class="ts-btn-soft text-sm text-center">X</a>
+                <a id="share-tg" target="_blank" rel="noopener" class="ts-btn-soft text-sm text-center">Telegram</a>
             </div>
             <div class="mt-3">
-                <a id="share-mail" class="inline-block text-sm text-gray-300 hover:text-white underline underline-offset-4">{{ __('ui.series.share_by_email') }}</a>
+                <a id="share-mail" class="inline-block text-sm ts-link-reset">{{ __('ui.series.share_by_email') }}</a>
             </div>
         </div>
     </div>

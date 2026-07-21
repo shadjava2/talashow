@@ -58,12 +58,12 @@
         $imgUrl = fn ($u) => \App\Support\MediaDisplay::url($u);
     @endphp
     <!-- Breadcrumbs -->
-    <nav class="text-sm text-gray-400 mb-6">
-        <a href="{{ route('home') }}" class="hover:text-white">{{ __('ui.nav.home') }}</a>
-        <span class="mx-2">></span>
-        <a href="{{ route('series.show', $series->slug) }}" class="hover:text-white">{{ $series->titleForLocale() }}</a>
-        <span class="mx-2">></span>
-        <span>{{ $episode->titleForLocale() }}</span>
+    <nav class="ts-crumb mb-6">
+        <a href="{{ route('home') }}">{{ __('ui.nav.home') }}</a>
+        <span class="mx-2 opacity-60">›</span>
+        <a href="{{ route('series.show', $series->slug) }}">{{ $series->titleForLocale() }}</a>
+        <span class="mx-2 opacity-60">›</span>
+        <span class="ts-crumb__current">{{ $episode->titleForLocale() }}</span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
@@ -102,7 +102,7 @@
                                 data-series-id="{{ (int) $series->id }}"
                                 data-episode-id="{{ (int) $episode->id }}"
                                 data-selected="{{ $selectedVideoLang }}"
-                                class="px-3 py-2 pr-9 rounded-lg bg-gray-800 hover:bg-gray-700 border border-white/10 text-white text-xs font-semibold appearance-none"
+                                class="ts-input text-xs font-semibold appearance-none pr-9"
                                 title="{{ __('ui.player.language') }}"
                             >
                                 @foreach(($videoLangOptions ?? []) as $opt)
@@ -111,7 +111,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <svg class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/80" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <svg class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--ts-text-muted)" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
                             </svg>
                         </div>
@@ -145,32 +145,32 @@
                     </div>
                 @endif
                 {{-- Engagement bar (Like / Views / Favorite) --}}
-                <div class="flex items-center justify-between gap-3 flex-wrap -mt-2 mb-6">
-                    <div class="flex items-center gap-3 flex-wrap">
+                <div class="ts-engagement-bar">
+                    <div class="ts-engagement-bar__left">
                         <button
                             type="button"
                             id="ts-series-like-btn"
                             data-ts-engagement="like"
                             data-url="{{ route('series.like', $series->slug) }}"
                             data-liked="{{ isset($isLiked) && $isLiked ? '1' : '0' }}"
-                            class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold inline-flex items-center gap-2 transition"
+                            class="ts-chip-action {{ isset($isLiked) && $isLiked ? 'is-active' : '' }}"
                             title="{{ __('ui.engagement.like') }}"
                         >
-                            <svg class="w-4 h-4 {{ isset($isLiked) && $isLiked ? 'text-red-400' : 'text-white/80' }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M12 21s-7.2-4.43-9.6-8.05C.7 10.2 1.3 6.9 4.1 5.2c2-1.2 4.5-.8 6.1.9 1.6-1.7 4.1-2.1 6.1-.9 2.8 1.7 3.4 5 1.7 7.75C19.2 16.57 12 21 12 21z"/>
                             </svg>
                             <span class="ts-like-label">{{ __('ui.engagement.like') }}</span>
-                            <span class="text-white/70">•</span>
+                            <span class="ts-chip-action__sep">•</span>
                             <span id="ts-like-count">{{ number_format((int) ($series->likes_count ?? 0), 0, ',', ' ') }}</span>
                         </button>
 
                         <div
-                            class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/85 text-xs font-semibold inline-flex items-center gap-2"
+                            class="ts-chip-action"
                             data-ts-view-track
                             data-view-url="{{ route('episode.view', $episode->id) }}"
                             data-episode-id="{{ $episode->id }}"
                         >
-                            <svg class="w-4 h-4 text-white/70" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
                             </svg>
                             <span>{{ __('ui.engagement.views_episode') }}:</span>
@@ -184,10 +184,10 @@
                         data-ts-engagement="favorite"
                         data-url="{{ route('series.favorite', $series->slug) }}"
                         data-favorited="{{ isset($isFavorited) && $isFavorited ? '1' : '0' }}"
-                        class="px-3 py-2 rounded-lg {{ isset($isFavorited) && $isFavorited ? 'bg-red-600/20 border-red-500/30' : 'bg-white/10 border-white/10' }} hover:bg-white/20 border text-white text-xs font-semibold inline-flex items-center gap-2 transition"
+                        class="ts-chip-action {{ isset($isFavorited) && $isFavorited ? 'is-active' : '' }}"
                         title="{{ __('ui.engagement.favorite') }}"
                     >
-                        <svg class="w-4 h-4 {{ isset($isFavorited) && $isFavorited ? 'text-amber-300' : 'text-white/80' }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 17.3l-6.2 3.7 1.7-7.1L2 8.9l7.3-.6L12 1.8l2.7 6.5 7.3.6-5.5 5 1.7 7.1z"/>
                         </svg>
                         <span class="ts-fav-label">{{ isset($isFavorited) && $isFavorited ? __('ui.engagement.favorited') : __('ui.engagement.favorite') }}</span>
@@ -195,12 +195,12 @@
                 </div>
             @else
                 <!-- Locked Episode -->
-                <div class="bg-gray-800 rounded-lg p-12 text-center">
+                <div class="ts-surface ts-surface--pad text-center">
                     <svg class="w-20 h-20 text-red-500 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="text-2xl font-bold mb-4">{{ __('ui.episode.locked_title', ['label' => $epUi]) }}</h3>
-                    <p class="text-gray-400 mb-6">
+                    <h3 class="text-2xl font-bold mb-4 ts-page-title">{{ __('ui.episode.locked_title', ['label' => $epUi]) }}</h3>
+                    <p class="ts-page-sub mb-6">
                         @if(($needsSubscriptionOnly ?? false))
                             {{ __('ui.episode.premium_required') }}
                         @elseif(($coinsNeeded ?? 0) > 0)
@@ -244,25 +244,25 @@
 
             <!-- Episode Info -->
             <div class="mb-6">
-                <h1 class="text-3xl font-bold mb-2">{{ $episode->titleForLocale() }}</h1>
-                <p class="text-gray-400">
+                <h1 class="text-3xl font-bold mb-2 ts-page-title">{{ $episode->titleForLocale() }}</h1>
+                <p class="ts-page-sub">
                     {{ $series->titleForLocale() }} •
                     {{ $episode->labelForLocale() }}
                 </p>
             </div>
 
             @if($episode->descriptionForLocale())
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold mb-3">{{ __('ui.episode.description') }}</h2>
-                <p class="text-gray-300">{{ $episode->descriptionForLocale() }}</p>
+            <div class="ts-surface ts-surface--pad mb-6">
+                <h2 class="text-xl font-semibold mb-3 ts-page-title">{{ __('ui.episode.description') }}</h2>
+                <p class="ts-text-secondary leading-relaxed">{{ $episode->descriptionForLocale() }}</p>
             </div>
             @endif
         </div>
 
         <!-- Episodes Sidebar -->
         <div class="lg:col-span-1 min-w-0 w-full relative z-0">
-            <div class="bg-gray-800 rounded-lg p-6 lg:sticky lg:top-20">
-                <h3 class="text-lg font-semibold mb-4">{{ $epUi }} ({{ $allEpisodes->count() }})</h3>
+            <div class="ts-surface ts-surface--pad lg:sticky lg:top-20">
+                <h3 class="text-lg font-semibold mb-4 ts-page-title">{{ $epUi }} ({{ $allEpisodes->count() }})</h3>
                 <div class="space-y-2 max-h-[600px] overflow-y-auto">
                     @foreach($allEpisodes as $ep)
                     @php
@@ -280,13 +280,14 @@
                         }
                     @endphp
                     <a href="{{ route('episode.show', [$series->slug, $ep->id]) }}"
-                       class="block p-3 rounded-lg {{ $ep->id === $episode->id ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600' }} transition">
+                       class="ts-ep-sidebar__item {{ $ep->id === $episode->id ? 'is-current' : '' }}">
                         <div class="flex items-center justify-between">
                             <span class="font-semibold">{{ $ep->labelForLocale() }}</span>
                             <div class="flex items-center gap-2">
                                 @if($coinUntil && $isEpUnlocked && !$hasSubscription)
                                     <span
-                                        class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-100 text-[10px] font-semibold"
+                                        class="px-2 py-0.5 rounded text-[10px] font-semibold"
+                                        style="background: var(--ts-accent-soft); color: var(--ts-accent)"
                                         title="{{ __('ui.episode.coin_unlock_title') }} — {{ __('ui.episode.expires') }} {{ $coinUntil->toDateTimeString() }}"
                                     >
                                         {{ __('ui.episode.expires') }} {{ $coinUntil->diffForHumans() }}
@@ -294,15 +295,15 @@
                                 @endif
                                 @if($isEpLocked)
                                     @if($lockLabel)
-                                        <span class="px-2 py-0.5 rounded bg-black/30 text-white text-xs font-semibold">
+                                        <span class="px-2 py-0.5 rounded text-xs font-semibold" style="background: var(--ts-btn-ghost-bg); color: var(--ts-text-secondary)">
                                             {{ $lockLabel }}
                                         </span>
                                     @endif
-                                    <svg class="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20" aria-label="{{ __('ui.episode.locked_aria') }}">
+                                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20" aria-label="{{ __('ui.episode.locked_aria') }}">
                                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                                     </svg>
                                 @else
-                                    <svg class="w-4 h-4 text-green-300" fill="currentColor" viewBox="0 0 20 20" aria-label="{{ __('ui.episode.available_aria') }}">
+                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20" aria-label="{{ __('ui.episode.available_aria') }}">
                                         <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
                                     </svg>
                                 @endif
@@ -320,26 +321,24 @@
     @if($episode->is_free)
         <!-- Guest gate modal (inciter à créer un compte après 10s) -->
         <div id="guest-gate-modal" class="fixed inset-0 z-[60] hidden" aria-hidden="true">
-            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
             <div class="relative w-full h-full flex items-center justify-center p-4">
-                <div class="max-w-lg w-full bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-6">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <h3 class="text-2xl font-bold">{{ __('ui.episode.guest_gate.title') }}</h3>
-                            <p class="text-gray-300 mt-2 leading-relaxed">{!! __('ui.episode.guest_gate.subtitle_html') !!}</p>
-                        </div>
+                <div class="max-w-lg w-full ts-panel ts-surface--pad">
+                    <div>
+                        <h3 class="text-2xl font-bold ts-page-title">{{ __('ui.episode.guest_gate.title') }}</h3>
+                        <p class="ts-text-secondary mt-2 leading-relaxed">{!! __('ui.episode.guest_gate.subtitle_html') !!}</p>
                     </div>
 
                     <div class="mt-6 flex flex-col sm:flex-row gap-3">
-                        <a href="{{ route('login') }}" class="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition text-center">
+                        <a href="{{ route('login') }}" class="ts-btn-primary w-full sm:w-auto text-center">
                             {{ __('ui.episode.guest_gate.login_cta') }}
                         </a>
-                        <a href="{{ route('register') }}" class="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition text-center">
+                        <a href="{{ route('register') }}" class="ts-btn-soft w-full sm:w-auto text-center">
                             {{ __('ui.episode.guest_gate.register_cta') }}
                         </a>
                     </div>
 
-                    <p class="text-xs text-gray-400 mt-4">
+                    <p class="text-xs ts-page-sub mt-4">
                         {{ __('ui.episode.guest_gate.footer_hint') }}
                     </p>
                 </div>

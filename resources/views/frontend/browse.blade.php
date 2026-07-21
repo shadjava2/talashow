@@ -99,8 +99,8 @@
                 @forelse($series as $s)
                     <x-catalog.series-card :series="$s" :img-url="$imgUrl" variant="grid" :genre-name-map="$genreNameMap" />
                 @empty
-                    <div class="col-span-full text-center py-16 rounded-2xl bg-black/35 border border-white/10">
-                        <p class="text-gray-400">{{ __('ui.browse.none_found') }}</p>
+                    <div class="col-span-full text-center py-16 ts-surface">
+                        <p class="ts-page-sub py-4">{{ __('ui.browse.none_found') }}</p>
                     </div>
                 @endforelse
             </div>

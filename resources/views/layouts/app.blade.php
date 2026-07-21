@@ -313,21 +313,21 @@
 
         {{-- Modal confirm (style bootstrap, UX pro) --}}
         <div id="ts-modal" class="fixed inset-0 z-[70] hidden" aria-hidden="true">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
             <div class="relative w-full h-full flex items-center justify-center p-4">
-                <div class="w-full max-w-lg bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl overflow-hidden">
-                    <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-                        <div id="ts-modal-title" class="text-lg font-semibold text-white">{{ __('ui.common.confirmation') }}</div>
-                        <button id="ts-modal-close" type="button" class="text-white/70 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                <div class="w-full max-w-lg ts-panel overflow-hidden">
+                    <div class="ts-panel__head">
+                        <div id="ts-modal-title" class="ts-panel__title">{{ __('ui.common.confirmation') }}</div>
+                        <button id="ts-modal-close" type="button" class="ts-panel__close" aria-label="{{ __('ui.common.close') }}">✕</button>
                     </div>
-                    <div class="px-5 py-4">
-                        <div id="ts-modal-message" class="text-sm text-gray-200 leading-relaxed"></div>
+                    <div class="ts-panel__body">
+                        <div id="ts-modal-message"></div>
                     </div>
-                    <div class="px-5 py-4 border-t border-gray-800 flex items-center justify-end gap-2">
-                        <button id="ts-modal-cancel" type="button" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                    <div class="ts-panel__foot">
+                        <button id="ts-modal-cancel" type="button" class="ts-btn-soft">
                             {{ __('ui.common.cancel') }}
                         </button>
-                        <button id="ts-modal-confirm" type="button" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition">
+                        <button id="ts-modal-confirm" type="button" class="ts-btn-primary">
                             {{ __('ui.common.confirm') }}
                         </button>
                     </div>
@@ -363,40 +363,40 @@
         </script>
 
         <div id="ts-newsletter-modal" class="fixed inset-0 z-[80] hidden" aria-hidden="true">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
             <div class="relative w-full h-full flex items-center justify-center p-4">
-                <div class="w-full max-w-md bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl overflow-hidden">
-                    <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-                        <div class="text-lg font-semibold text-white">{{ __('ui.newsletter.title') }}</div>
-                        <button id="ts-newsletter-close" type="button" class="text-white/70 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition" aria-label="{{ __('ui.common.close') }}">✕</button>
+                <div class="w-full max-w-md ts-panel overflow-hidden">
+                    <div class="ts-panel__head">
+                        <div class="ts-panel__title">{{ __('ui.newsletter.title') }}</div>
+                        <button id="ts-newsletter-close" type="button" class="ts-panel__close" aria-label="{{ __('ui.common.close') }}">✕</button>
                     </div>
-                    <form id="ts-newsletter-form" class="px-5 py-4 space-y-4" data-ts-validate="form" novalidate>
+                    <form id="ts-newsletter-form" class="ts-panel__body space-y-4" data-ts-validate="form" novalidate>
                         @csrf
                         <div>
-                            <label for="ts-newsletter-email" class="block text-sm mb-2">{{ __('ui.common.email') }}</label>
+                            <label for="ts-newsletter-email" class="block text-sm mb-2" style="color: var(--ts-text-primary)">{{ __('ui.common.email') }}</label>
                             <input
                                 id="ts-newsletter-email"
                                 name="email"
                                 type="email"
                                 required
                                 autocomplete="email"
-                                class="w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg focus:outline-none focus:border-red-600"
+                                class="ts-input"
                                 placeholder="{{ __('ui.newsletter.email_placeholder') }}"
                             />
-                            <p class="text-xs text-gray-400 mt-2">
+                            <p class="text-xs mt-2" style="color: var(--ts-text-muted)">
                                 {{ __('ui.newsletter.subtitle') }}
                             </p>
                         </div>
                         <input type="hidden" name="source" value="nonsubscriber_popup" />
 
-                        <div class="flex items-center justify-end gap-2">
-                            <button type="button" id="ts-newsletter-cancel" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                        <div class="flex items-center justify-end gap-2 flex-wrap">
+                            <button type="button" id="ts-newsletter-cancel" class="ts-btn-soft">
                                 {{ __('ui.common.later') }}
                             </button>
-                            <button type="button" id="ts-newsletter-resend" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
+                            <button type="button" id="ts-newsletter-resend" class="ts-btn-soft">
                                 {{ __('ui.newsletter.resend') }}
                             </button>
-                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition">
+                            <button type="submit" class="ts-btn-primary">
                                 {{ __('ui.newsletter.subscribe') }}
                             </button>
                         </div>
