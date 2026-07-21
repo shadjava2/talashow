@@ -70,7 +70,7 @@
     <x-layout.ambient-bg />
     <div class="ts-app-shell__content relative z-10 isolate">
     <!-- Navigation -->
-    <nav class="ts-chrome-nav border-b sticky top-0 z-50">
+    <nav class="ts-chrome-nav ts-chrome-nav--top-safe border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @php
                 $siteLogo = $settings->get('site_logo_url') ?: asset('logo.svg');
@@ -430,10 +430,10 @@
     {{-- Bottom Navigation (mobile app-like): Accueil / Genre / Profil|Connexion / Langue --}}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[90] ts-chrome-nav ts-chrome-nav--bottom pb-[env(safe-area-inset-bottom)]">
         <div class="max-w-7xl mx-auto px-3">
-            <div class="h-16 grid grid-cols-4 items-center">
+            <div class="h-16 min-h-[44px] grid grid-cols-4 items-center">
                 {{-- Home --}}
                 <a href="{{ route('home') }}"
-                   class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('home') ? 'text-red-400' : 'text-gray-300' }}">
+                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('home') ? 'text-red-400' : 'text-gray-300' }}">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
                     </svg>
@@ -442,7 +442,7 @@
 
                 {{-- Genre --}}
                 <a href="{{ route('browse') }}"
-                   class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('browse') ? 'text-red-400' : 'text-gray-300' }}">
+                   class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('browse') ? 'text-red-400' : 'text-gray-300' }}">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
                     </svg>
@@ -452,7 +452,7 @@
                 {{-- Profile / Login --}}
                 @auth
                     <a href="{{ route('profile') }}"
-                       class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('profile') ? 'text-red-400' : 'text-gray-300' }}">
+                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('profile') ? 'text-red-400' : 'text-gray-300' }}">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14Z"/>
                         </svg>
@@ -460,7 +460,7 @@
                     </a>
                 @else
                     <a href="{{ route('login') }}"
-                       class="flex flex-col items-center justify-center gap-1 text-[11px] {{ request()->routeIs('login') ? 'text-red-400' : 'text-gray-300' }}">
+                       class="ts-bottom-nav__item flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] {{ request()->routeIs('login') ? 'text-red-400' : 'text-gray-300' }}">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5ZM4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8v2H4v14h8v2Z"/>
                         </svg>
@@ -469,8 +469,8 @@
                 @endauth
 
                 {{-- Langue (dropdown) --}}
-                <details class="relative flex flex-col items-center justify-center">
-                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 text-[11px] text-gray-300">
+                <details class="relative flex flex-col items-center justify-center min-h-[44px]">
+                    <summary class="list-none cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] text-gray-300">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm7.93 9h-3.17a15.7 15.7 0 0 0-1.15-5.01A8.02 8.02 0 0 1 19.93 11ZM12 4c.92 0 2.55 2.12 3.32 7H8.68C9.45 6.12 11.08 4 12 4ZM4.07 13h3.17c.2 1.78.62 3.53 1.25 5.04A8.02 8.02 0 0 1 4.07 13Zm3.17-2H4.07a8.02 8.02 0 0 1 4.26-5.02A15.7 15.7 0 0 0 7.24 11Zm1.44 2h6.64c-.78 4.88-2.4 7-3.32 7-.92 0-2.55-2.12-3.32-7Zm7.83 5.04c.63-1.51 1.05-3.26 1.25-5.04h3.17a8.02 8.02 0 0 1-4.42 5.04Z"/>
                         </svg>

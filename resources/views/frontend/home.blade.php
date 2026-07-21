@@ -36,7 +36,7 @@
                     <div class="w-full grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-center">
                         <div class="max-w-2xl">
                             <div class="mb-4 flex items-center gap-2 flex-wrap">
-                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded">{{ __('ui.home.exclusive_badge') }}</span>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 text-white text-xs font-semibold rounded" style="background: var(--ts-accent)">{{ __('ui.home.exclusive_badge') }}</span>
                                 @if($series->published_at && $series->published_at->isFuture())
                                     <span class="inline-flex items-center px-3 py-1 bg-white/10 border border-white/15 text-white text-xs font-semibold rounded">
                                         {{ __('ui.home.available_on_datetime', ['date' => $series->published_at->format('d/m/Y'), 'time' => $series->published_at->format('H:i')]) }}
@@ -58,10 +58,10 @@
                                 </div>
                             @endif
                             <div class="flex flex-wrap gap-3">
-                                <a href="{{ route('series.show', $series->slug) }}" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition shadow-lg shadow-red-600/20">
+                                <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--primary px-6 py-3 rounded-lg font-semibold transition">
                                     {{ ($series->published_at && $series->published_at->isFuture()) ? __('ui.home.view_date') : __('ui.home.watch_now') }}
                                 </a>
-                                <a href="{{ route('series.show', $series->slug) }}" class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold backdrop-blur-sm transition">{{ __('ui.home.more_info') }}</a>
+                                <a href="{{ route('series.show', $series->slug) }}" class="ts-btn ts-btn--ghost px-6 py-3 rounded-lg font-semibold transition">{{ __('ui.home.more_info') }}</a>
                             </div>
                         </div>
                         <div class="hidden lg:block">

@@ -5,18 +5,21 @@
 :root {
     --ts-bg-deep: #060608;
     --ts-bg-base: #0b0b0e;
-    --ts-bg-surface: #101014;
-    --ts-bg-elevated: #18181d;
+    --ts-bg-surface: #121216;
+    --ts-bg-elevated: #1a1a20;
     --ts-bg-card: #222228;
     --ts-border: rgba(255, 255, 255, 0.08);
     --ts-border-strong: rgba(255, 255, 255, 0.14);
     --ts-accent: #e50914;
+    --ts-accent-hover: #f40612;
     --ts-accent-soft: rgba(229, 9, 20, 0.14);
     --ts-accent-glow: rgba(220, 38, 38, 0.16);
     --ts-text-primary: #fafafa;
     --ts-text-secondary: #d4d4d8;
     --ts-text-muted: #a1a1aa;
     --ts-text-subtle: #71717a;
+    --ts-radius-card: 10px;
+    --ts-dur-hover: 180ms;
     --ts-content-max: 80rem;
     --ts-reading-line: 1.6;
 }
@@ -245,11 +248,11 @@ html, body {
     background-size: 1000px 100%;
 }
 
-/* Hero 3D Carousel */
+/* Hero carousel — allégé (pas de rotateY / blur, vars JS ignorées) */
 .hero-carousel {
     position: relative;
-    height: 70vh;
-    min-height: 520px;
+    height: min(70vh, 620px);
+    min-height: 420px;
     overflow: hidden;
     background: var(--ts-bg-deep);
     contain: paint;
@@ -260,19 +263,16 @@ html, body {
     position: relative;
     height: 100%;
     width: 100%;
-    perspective: 1200px;
-    transform-style: preserve-3d;
     pointer-events: none;
 }
 
 .hero-slide {
     position: absolute;
     inset: 0;
-    transform-style: preserve-3d;
-    transition: transform 650ms cubic-bezier(.2,.9,.2,1), opacity 650ms cubic-bezier(.2,.9,.2,1), filter 650ms cubic-bezier(.2,.9,.2,1);
-    transform: translate3d(var(--tx, 0%), 0, var(--tz, 0px)) rotateY(var(--ry, 0deg)) scale(var(--sc, 1));
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+    transform: translate3d(var(--tx, 0%), 0, 0);
     opacity: var(--op, 0);
-    filter: blur(var(--blur, 0px)) saturate(var(--sat, 1));
+    filter: none;
     z-index: var(--z, 1);
     pointer-events: none;
 }
@@ -283,7 +283,7 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.04);
+    transform: none;
     pointer-events: none;
     user-select: none;
 }
@@ -293,9 +293,8 @@ html, body {
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(1200px 600px at 78% 25%, rgba(229, 9, 20, 0.28), rgba(229, 9, 20, 0) 60%),
-        linear-gradient(90deg, rgba(6, 6, 8, 0.94) 0%, rgba(6, 6, 8, 0.78) 38%, rgba(6, 6, 8, 0.2) 72%, transparent 100%),
-        linear-gradient(0deg, var(--ts-bg-deep) 0%, rgba(6, 6, 8, 0.08) 50%, rgba(6, 6, 8, 0.88) 100%);
+        linear-gradient(90deg, var(--ts-bg-deep) 0%, rgba(6, 6, 8, 0.4) 60%, transparent 100%),
+        linear-gradient(0deg, var(--ts-bg-deep) 0%, rgba(6, 6, 8, 0.15) 45%, rgba(6, 6, 8, 0.75) 100%);
 }
 
 .hero-content {
@@ -380,7 +379,7 @@ html, body {
     transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
     text-align: left;
 }
-.hero-thumb:hover { transform: translateY(-2px); background: rgba(255,255,255,0.10); }
+.hero-thumb:hover { background: rgba(255,255,255,0.10); }
 .hero-thumb img {
     width: 44px;
     height: 44px;
@@ -414,7 +413,7 @@ html, body {
     box-shadow:
         0 22px 70px rgba(0,0,0,0.45),
         0 10px 24px rgba(229, 9, 20, 0.08);
-    transform: perspective(900px) rotateY(-10deg) translateZ(0);
+    transform: none;
 }
 
 .hero-poster::after{
@@ -429,11 +428,14 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.03);
+    transform: none;
 }
 
 @media (max-width: 768px) {
-    .hero-carousel { height: 66vh; min-height: 520px; }
+    .hero-carousel {
+        height: 56vh;
+        min-height: 380px;
+    }
     .hero-thumb { min-width: 220px; }
     .hero-rail-wrap { padding: 0 14px; }
 }
@@ -464,7 +466,7 @@ html, body {
 }
 
 .ts-section-head__title {
-    font-size: 1.35rem;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--ts-text-primary);
@@ -534,30 +536,36 @@ html, body {
     z-index: 1;
 }
 
+/* === POSTER CARD — hover stable Netflix-like === */
 .ts-poster-card {
+    position: relative;
+    z-index: 1;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     cursor: pointer;
 }
 
+.ts-poster-card:hover {
+    z-index: 2;
+}
+
 .ts-poster-card:focus-visible {
-    outline: 2px solid #ef4444;
-    outline-offset: 4px;
-    border-radius: 0.5rem;
+    outline: 2px solid var(--ts-accent, #e50914);
+    outline-offset: 2px;
+    border-radius: var(--ts-radius-card, 10px);
 }
 
 .ts-poster-card__media {
     position: relative;
     aspect-ratio: 2 / 3;
-    border-radius: 0.5rem;
+    border-radius: var(--ts-radius-card, 10px);
     overflow: hidden;
     background: linear-gradient(145deg, var(--ts-bg-card) 0%, var(--ts-bg-elevated) 100%);
     isolation: isolate;
     transform: translateZ(0);
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform;
+    backface-visibility: hidden;
+    transition: transform var(--ts-dur-hover, 180ms) ease-out;
+    will-change: auto;
 }
 
 .ts-poster-card__img {
@@ -566,8 +574,7 @@ html, body {
     height: 100%;
     object-fit: cover;
     object-position: center top;
-    transform: scale(1.01) translateZ(0);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: none;
 }
 
 .ts-poster-card__tag {
@@ -575,28 +582,29 @@ html, body {
     top: 0.45rem;
     left: 0.45rem;
     z-index: 4;
-    padding: 0.2rem 0.45rem;
-    border-radius: 0.35rem;
-    font-size: 0.625rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    pointer-events: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     line-height: 1.2;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .ts-poster-card__tag--hot {
-    background: linear-gradient(135deg, #ef4444, #f97316);
+    background: var(--ts-accent, #e50914);
     color: #fff;
 }
 
 .ts-poster-card__tag--new {
-    background: linear-gradient(135deg, #22c55e, #14b8a6);
+    background: #16a34a;
     color: #fff;
 }
 
 .ts-poster-card__tag--exclusive {
-    background: linear-gradient(135deg, #a855f7, #ec4899);
+    background: #7c3aed;
     color: #fff;
 }
 
@@ -637,27 +645,27 @@ html, body {
 .ts-poster-card__shade {
     position: absolute;
     inset: 0;
-    pointer-events: none;
+    pointer-events: none !important;
     background: linear-gradient(
         180deg,
         rgba(0, 0, 0, 0) 30%,
         rgba(0, 0, 0, 0.72) 100%
     );
     opacity: 0.75;
-    transition: opacity 0.35s ease;
+    transition: opacity var(--ts-dur-hover, 180ms) ease-out;
 }
 
 .ts-poster-card__hover {
     position: absolute;
     inset: 0;
-    pointer-events: none;
+    pointer-events: none !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--ts-dur-hover, 180ms) ease-out;
 }
 
 .ts-poster-card__play {
@@ -667,11 +675,11 @@ html, body {
     width: 3rem;
     height: 3rem;
     border-radius: 9999px;
-    background: rgba(229, 9, 20, 0.92);
+    background: color-mix(in srgb, var(--ts-accent, #e50914) 92%, transparent);
     color: #fff;
     box-shadow: 0 8px 24px rgba(229, 9, 20, 0.45);
-    transform: scale(0.85);
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0.95;
+    transition: opacity var(--ts-dur-hover, 180ms) ease-out;
 }
 
 .ts-poster-card__play svg {
@@ -694,12 +702,14 @@ html, body {
     right: 0.5rem;
     z-index: 2;
     pointer-events: none;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    background: rgba(0, 0, 0, 0.65);
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    font-size: 0.65rem;
+    font-size: 0.6875rem;
     font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     line-height: 1.2;
     color: #fff;
     text-align: center;
@@ -731,21 +741,14 @@ html, body {
     color: var(--ts-text-muted);
 }
 
-/* Desktop : survol fluide, z-index pour éviter recouvrement bugué */
+/* Hover UNIQUEMENT souris fine — UNE seule scale, max 1.05 */
 @media (hover: hover) and (pointer: fine) {
-    .ts-catalog-grid > .ts-poster-card:hover {
-        z-index: 12;
-    }
-
     .ts-poster-card:hover .ts-poster-card__media {
-        transform: scale(1.08) translateZ(0);
-        box-shadow:
-            0 20px 44px rgba(0, 0, 0, 0.55),
-            0 0 0 1px rgba(255, 255, 255, 0.1);
+        transform: scale(1.05) translateZ(0);
     }
 
     .ts-poster-card:hover .ts-poster-card__img {
-        transform: scale(1.1) translateZ(0);
+        transform: none;
     }
 
     .ts-poster-card:hover .ts-poster-card__shade {
@@ -757,7 +760,7 @@ html, body {
     }
 
     .ts-poster-card:hover .ts-poster-card__play {
-        transform: scale(1);
+        opacity: 1;
     }
 
     .ts-poster-card:hover .ts-poster-card__title {
@@ -765,14 +768,24 @@ html, body {
     }
 }
 
-/* Mobile : feedback tactile sans hover fantôme */
+/* Tactile — press state, jamais de scale (pas de hover fantôme) */
 @media (hover: none) {
     .ts-poster-card__hover {
         opacity: 0;
     }
 
     .ts-poster-card:active .ts-poster-card__media {
-        transform: scale(0.97) translateZ(0);
+        transform: none;
+        filter: brightness(0.92);
+    }
+}
+
+/* Accessibilité motion */
+@media (prefers-reduced-motion: reduce) {
+    .ts-poster-card,
+    .ts-poster-card * {
+        transition: none !important;
+        transform: none !important;
     }
 }
 
@@ -874,6 +887,39 @@ html, body {
 .ts-chrome-nav--bottom {
     background: color-mix(in srgb, var(--ts-bg-surface) 94%, transparent);
     border-top: 1px solid var(--ts-border);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.ts-chrome-nav--top-safe {
+    padding-top: env(safe-area-inset-top);
+}
+
+/* CTA hero / actions */
+.ts-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.ts-btn--primary {
+    background: var(--ts-accent);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(229, 9, 20, 0.28);
+}
+
+.ts-btn--primary:hover {
+    background: var(--ts-accent-hover);
+}
+
+.ts-btn--ghost {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.ts-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .ts-chrome-footer {
@@ -985,10 +1031,17 @@ html, body {
 .ts-page-dramabox__sections {
     display: flex;
     flex-direction: column;
+    gap: 1.75rem;
+}
+
+@media (min-width: 768px) {
+    .ts-page-dramabox__sections {
+        gap: 2.5rem;
+    }
 }
 
 .ts-dramabox-row {
-    padding: 1.35rem 0 0.75rem;
+    padding: 0.5rem 0;
     content-visibility: auto;
     contain-intrinsic-size: auto 320px;
 }
@@ -1009,7 +1062,7 @@ html, body {
 }
 
 .ts-section-head--dramabox .ts-section-head__title {
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
     font-weight: 800;
     letter-spacing: -0.02em;
 }
@@ -1109,12 +1162,12 @@ html, body {
 .ts-catalog-row__viewport {
     overflow-x: auto;
     overflow-y: visible;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     scroll-padding-inline: 0.25rem;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 0.35rem 0.25rem 1rem;
+    padding: 8px 0.25rem 1rem;
 }
 
 .ts-catalog-row__viewport::-webkit-scrollbar {
@@ -1129,33 +1182,27 @@ html, body {
 
 .ts-catalog-row__track {
     display: flex;
-    gap: 0.65rem;
+    gap: 0.75rem;
     align-items: stretch;
+    padding-block: 8px;
 }
 
 @media (min-width: 640px) {
     .ts-catalog-row__track {
-        gap: 0.85rem;
+        gap: 1rem;
     }
 }
 
 .ts-poster-card--row {
-    flex: 0 0 11.5rem;
-    width: 11.5rem;
+    flex: 0 0 12rem;
+    width: 12rem;
     scroll-snap-align: start;
 }
 
 @media (min-width: 640px) {
     .ts-poster-card--row {
-        flex: 0 0 13rem;
-        width: 13rem;
-    }
-}
-
-@media (min-width: 1024px) {
-    .ts-poster-card--row {
-        flex: 0 0 14.5rem;
-        width: 14.5rem;
+        flex: 0 0 clamp(13rem, 14vw, 15rem);
+        width: clamp(13rem, 14vw, 15rem);
     }
 }
 
@@ -1209,18 +1256,20 @@ html, body {
     }
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
     .ts-catalog-row-section .ts-poster-card--row:hover,
     .ts-catalog-row-section .ts-poster-card--ranked:hover {
-        z-index: 15;
+        z-index: 2;
     }
 
     .ts-catalog-row-section .ts-poster-card--row:hover .ts-poster-card__media,
     .ts-catalog-row-section .ts-poster-card--ranked:hover .ts-poster-card__media {
-        transform: scale(1.08) translateZ(0);
-        box-shadow:
-            0 20px 40px rgba(0, 0, 0, 0.55),
-            0 0 0 1px rgba(255, 255, 255, 0.08);
+        transform: scale(1.05) translateZ(0);
+    }
+
+    .ts-catalog-row-section .ts-poster-card--row:hover .ts-poster-card__img,
+    .ts-catalog-row-section .ts-poster-card--ranked:hover .ts-poster-card__img {
+        transform: none;
     }
 }
 
@@ -1509,7 +1558,7 @@ html, body {
 }
 
 .ts-series-hero__play:hover {
-    transform: translateY(-1px);
+    background: var(--ts-accent-hover, #f40612);
     box-shadow: 0 12px 28px rgba(220, 38, 38, 0.55);
 }
 
@@ -1598,8 +1647,9 @@ html, body {
 
 .ts-episode-pills__chip {
     flex: 0 0 auto;
-    min-width: 2.5rem;
-    height: 2.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1610,10 +1660,9 @@ html, body {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease,
-        color 0.2s ease;
+        background var(--ts-dur-hover, 180ms) ease-out,
+        border-color var(--ts-dur-hover, 180ms) ease-out,
+        color var(--ts-dur-hover, 180ms) ease-out;
 }
 
 .ts-episode-pills__chip:hover {
@@ -1622,10 +1671,10 @@ html, body {
 
 .ts-episode-pills__chip.is-active {
     color: #fff;
-    background: linear-gradient(135deg, #dc2626, #ea580c);
+    background: var(--ts-accent);
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
-    transform: scale(1.05);
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
+    transform: none;
 }
 
 .ts-episode-list {
@@ -1708,7 +1757,7 @@ html, body {
 }
 
 .ts-episode-card:hover .ts-episode-card__img {
-    transform: scale(1.06);
+    transform: none;
 }
 
 .ts-episode-card__play {
