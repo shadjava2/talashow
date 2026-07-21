@@ -96,14 +96,19 @@
 
 /* Tawk.to : visible au-dessus du menu mobile (ne pas bloquer pointer-events) */
 #tawkchat-container,
+#tawk-container,
 .tawk-min-container,
 .tawk-max-container,
+.ts-chat-widget,
 iframe[title*="chat" i] {
     z-index: 100000 !important;
 }
 
 @media (max-width: 767px) {
-    .tawk-min-container {
+    #tawkchat-container,
+    #tawk-container,
+    .tawk-min-container,
+    .ts-chat-widget {
         bottom: calc(72px + env(safe-area-inset-bottom)) !important;
     }
 }
@@ -114,7 +119,10 @@ iframe[title*="chat" i] {
     font-weight: 500;
     color: var(--ts-text-muted);
     transition: color 0.2s ease;
-    padding: 0.35rem 0.15rem;
+    padding: 0.5rem 0.25rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
 }
 
 .ts-nav-link:hover {
@@ -127,14 +135,10 @@ iframe[title*="chat" i] {
 }
 
 /* Focus visible pour navigation clavier */
-a:focus-visible,
-button:focus-visible,
-.ts-poster-card:focus-visible,
-.ts-episode-card__link:focus-visible,
-.ts-btn:focus-visible {
+:where(a, button, .ts-poster-card, .ts-episode-card__link, .ts-btn, .ts-header-btn):focus-visible {
     outline: 2px solid var(--ts-accent, #e50914);
     outline-offset: 2px;
-    border-radius: var(--ts-radius-card, 10px);
+    border-radius: var(--ts-radius-card, 8px);
 }
 
 /* Supprime l’ancienne règle globale z-index sur tous les liens (source de conflits) */
