@@ -36,17 +36,6 @@
 
     @if($isCatalogMode)
         <div class="ts-page-dramabox__sections mt-2">
-            @if(($mustWatch ?? collect())->count())
-                <x-catalog.series-row
-                    :title="__('ui.catalog.must_sees')"
-                    :series="$mustWatch"
-                    :more-url="route('browse')"
-                    :img-url="$imgUrl"
-                    :genre-name-map="$genreNameMap"
-                    row-id="browse-must"
-                />
-            @endif
-
             @if(($trending ?? collect())->count())
                 <x-catalog.series-row
                     :title="__('ui.home.trending')"
@@ -78,6 +67,17 @@
                     :row-id="'browse-genre-' . $row['genre']->slug"
                 />
             @endforeach
+
+            @if(($mustWatch ?? collect())->count())
+                <x-catalog.series-row
+                    :title="__('ui.catalog.must_sees')"
+                    :series="$mustWatch"
+                    :more-url="route('browse')"
+                    :img-url="$imgUrl"
+                    :genre-name-map="$genreNameMap"
+                    row-id="browse-must"
+                />
+            @endif
         </div>
 
         @if($series->count())

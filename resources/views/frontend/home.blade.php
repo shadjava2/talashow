@@ -82,17 +82,6 @@
     @endif
 
     <div class="ts-page-dramabox__sections">
-        @if($mustWatch->count())
-            <x-catalog.series-row
-                :title="__('ui.catalog.must_sees')"
-                :series="$mustWatch"
-                :more-url="route('browse')"
-                :img-url="$imgUrl"
-                :genre-name-map="$genreNameMap ?? []"
-                row-id="home-must-watch"
-            />
-        @endif
-
         @if($trending->count())
             <x-catalog.series-row
                 :title="__('ui.home.trending')"
@@ -125,6 +114,17 @@
                 :row-id="'home-genre-' . $row['genre']->slug"
             />
         @endforeach
+
+        @if($mustWatch->count())
+            <x-catalog.series-row
+                :title="__('ui.catalog.must_sees')"
+                :series="$mustWatch"
+                :more-url="route('browse')"
+                :img-url="$imgUrl"
+                :genre-name-map="$genreNameMap ?? []"
+                row-id="home-must-watch"
+            />
+        @endif
     </div>
 </div>
 @endsection

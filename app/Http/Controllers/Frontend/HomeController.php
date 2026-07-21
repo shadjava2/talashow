@@ -44,7 +44,7 @@ class HomeController extends Controller
         $cardCols = $this->seriesCardColumns();
         $heroCols = $this->seriesCardColumns(true);
 
-        $featured = Cache::remember('talashow.home.featured', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $heroCols) {
+        $featured = Cache::remember('talashow.home.featured.v4', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $heroCols) {
             return Series::where('is_featured', true)
                 ->frontendVisible()
                 ->orderBy('sort_order')
@@ -53,46 +53,59 @@ class HomeController extends Controller
                 ->get($heroCols);
         });
 
-        $newReleases = Cache::remember('talashow.home.new_releases.v2', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
-            return Series::frontendVisible()
-                ->orderByDesc('created_at')
-                ->orderByDesc('published_at')
-                ->limit(self::HOME_ROW_LIMIT)
-                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
-                ->get($cardCols);
-        });
-
-        $trending = Cache::remember('talashow.home.trending.v3', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
-            $flagged = Series::where('is_trending', true)
+        // Tendances : UNIQUEMENT les séries marquées is_trending (pas de remplissage auto)
+        $trending = Cache::remember('talashow.home.trending.v4', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
+            return Series::where('is_trending', true)
                 ->frontendVisible()
                 ->orderByDesc('views_count')
+                ->orderByDesc('rating')
                 ->limit(self::HOME_ROW_LIMIT)
                 ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
                 ->get($cardCols);
-
-            if ($flagged->count() >= 6) {
-                return $flagged;
-            }
-
-            $ids = $flagged->pluck('id')->all();
-            $extra = Series::frontendVisible()
-                ->when(count($ids) > 0, fn ($q) => $q->whereNotIn('id', $ids))
-                ->orderByDesc('views_count')
-                ->limit(self::HOME_ROW_LIMIT - $flagged->count())
-                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
-                ->get($cardCols);
-
-            return $flagged->concat($extra);
         });
 
-        $mustWatch = Cache::remember('talashow.home.mustwatch.v2', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
+        // Nouveautés : publiées depuis moins de 3 mois (published_at, sinon created_at)
+        $newReleases = Cache::remember('talashow.home.new_releases.v4', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
+            $since = now()->subMonths(3);
+
             return Series::frontendVisible()
-                ->orderBy('rating', 'desc')
-                ->orderBy('views_count', 'desc')
-                ->limit(self::HOME_ROW_LIMIT)
+                ->where(function ($q) use ($since) {
+                    $q->where(function ($q2) use ($since) {
+                        $q2->whereNotNull('published_at')
+                            ->where('published_at', '<=', now())
+                            ->where('published_at', '>=', $since);
+                    })->orWhere(function ($q2) use ($since) {
+                        $q2->whereNull('published_at')
+                            ->where('created_at', '>=', $since);
+                    });
+                })
+                ->orderByRaw('COALESCE(published_at, created_at) DESC')
+                ->limit(self::HOME_ROW_LIMIT + 10)
                 ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
                 ->get($cardCols);
         });
+
+        // À ne pas manquer : meilleures notes / vues
+        $mustWatch = Cache::remember('talashow.home.mustwatch.v4', self::CACHE_TTL_SECONDS, function () use ($episodeCountSub, $cardCols) {
+            return Series::frontendVisible()
+                ->orderByDesc('rating')
+                ->orderByDesc('views_count')
+                ->limit(self::HOME_ROW_LIMIT + 10)
+                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
+                ->get($cardCols);
+        });
+
+        // Anti-doublons entre rangées (ordre : tendances → nouveautés → à ne pas manquer)
+        $usedIds = $trending->pluck('id')->all();
+        $newReleases = $newReleases
+            ->reject(fn ($s) => in_array($s->id, $usedIds, true))
+            ->take(self::HOME_ROW_LIMIT)
+            ->values();
+        $usedIds = array_merge($usedIds, $newReleases->pluck('id')->all());
+        $mustWatch = $mustWatch
+            ->reject(fn ($s) => in_array($s->id, $usedIds, true))
+            ->take(self::HOME_ROW_LIMIT)
+            ->values();
 
         $quickGenres = Cache::remember('talashow.home.quick_genres.v2', 300, function () {
             return Genre::query()
@@ -245,31 +258,51 @@ class HomeController extends Controller
         if ($isCatalogMode) {
             $cardCols = $this->seriesCardColumns();
             $rowLimit = self::HOME_ROW_LIMIT;
-            $newReleases = Series::frontendVisible()
-                ->orderByDesc('created_at')
-                ->limit($rowLimit)
-                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
-                ->get($cardCols);
-            $genreRows = $this->buildGenreCatalogRows($episodeCountSub);
-            $mustWatch = Series::frontendVisible()
-                ->orderByDesc('rating')
-                ->orderByDesc('views_count')
-                ->limit($rowLimit)
-                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
-                ->get($cardCols);
+            $since = now()->subMonths(3);
+
             $trending = Series::where('is_trending', true)
                 ->frontendVisible()
                 ->orderByDesc('views_count')
+                ->orderByDesc('rating')
                 ->limit($rowLimit)
                 ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
                 ->get($cardCols);
-            if ($trending->count() < 6) {
-                $trending = Series::frontendVisible()
-                    ->orderByDesc('views_count')
-                    ->limit($rowLimit)
-                    ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
-                    ->get($cardCols);
-            }
+
+            $newReleases = Series::frontendVisible()
+                ->where(function ($q) use ($since) {
+                    $q->where(function ($q2) use ($since) {
+                        $q2->whereNotNull('published_at')
+                            ->where('published_at', '<=', now())
+                            ->where('published_at', '>=', $since);
+                    })->orWhere(function ($q2) use ($since) {
+                        $q2->whereNull('published_at')
+                            ->where('created_at', '>=', $since);
+                    });
+                })
+                ->orderByRaw('COALESCE(published_at, created_at) DESC')
+                ->limit($rowLimit + 10)
+                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
+                ->get($cardCols);
+
+            $mustWatch = Series::frontendVisible()
+                ->orderByDesc('rating')
+                ->orderByDesc('views_count')
+                ->limit($rowLimit + 10)
+                ->withCount(['episodes as active_episodes_count' => $episodeCountSub])
+                ->get($cardCols);
+
+            $usedIds = $trending->pluck('id')->all();
+            $newReleases = $newReleases
+                ->reject(fn ($s) => in_array($s->id, $usedIds, true))
+                ->take($rowLimit)
+                ->values();
+            $usedIds = array_merge($usedIds, $newReleases->pluck('id')->all());
+            $mustWatch = $mustWatch
+                ->reject(fn ($s) => in_array($s->id, $usedIds, true))
+                ->take($rowLimit)
+                ->values();
+
+            $genreRows = $this->buildGenreCatalogRows($episodeCountSub);
             $series = $query->orderByDesc('created_at')->paginate(18);
         } else {
             $series = $query->orderBy('created_at', 'desc')->paginate(24);
