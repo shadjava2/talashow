@@ -58,16 +58,17 @@ else
 fi
 
 # --- 3) Assets front (Vite) -------------------------------------------------
-echo "==> build front"
+# public/build est versionné (npm souvent absent sur cPanel mutualisé)
+echo "==> assets front"
 if command -v npm >/dev/null 2>&1; then
-  # Vite/Tailwind sont en devDependencies → install complet requis pour le build
+  echo "    npm trouvé — rebuild optionnel…"
   npm ci 2>/dev/null || npm install
   npm run build
-elif [ -d "$APP_DIR/public/build" ]; then
-  echo "    npm absent — utilisation de public/build déjà présent."
+elif [ -d "$APP_DIR/public/build" ] && [ -f "$APP_DIR/public/build/manifest.json" ]; then
+  echo "    npm absent — utilisation de public/build commité (OK)."
 else
-  echo "!! npm absent et public/build manquant."
-  echo "   Sur ton PC : npm run build puis commit public/build, ou installe Node sur le serveur."
+  echo "!! npm absent et public/build/manifest.json manquant."
+  echo "   Sur le PC : npm run build && git add public/build && git push"
   exit 1
 fi
 
